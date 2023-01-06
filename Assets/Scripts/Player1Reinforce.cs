@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class Player1Reinforce : MonoBehaviour
 {
+
     public static int P1Points;
     public static int P1SpecialPoints;
 
     public static string[,] P1Area = new string[,] { { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " } };
+
+    object[] tempStorage = new object[] { 0, 0, " " };
 
     bool isStart;
     bool ReapOnce;
@@ -185,11 +188,15 @@ public class Player1Reinforce : MonoBehaviour
                                 else
                                 {
                                     P1Area[5, ran] = type;
+                                    tempStorage = new object[] { 5, ran, type };
+                                    BroadcastMessage("Spawn", tempStorage);
                                 }
                             }
                             else
                             {
                                 P1Area[5, ran] = type;
+                                tempStorage = new object[] { 5, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else if (P1Area[5, ran - 2] == type)
@@ -199,11 +206,15 @@ public class Player1Reinforce : MonoBehaviour
                         else
                         {
                             P1Area[5, ran] = type;
+                            tempStorage = new object[] { 5, ran, type };
+                            BroadcastMessage("Spawn", tempStorage);
                         }
                     }
                     else
                     {
                         P1Area[5, ran] = type;
+                        tempStorage = new object[] { 5, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else if (P1Area[5, ran + 1] == type && P1Area[5, ran + 2] == type)
@@ -213,6 +224,8 @@ public class Player1Reinforce : MonoBehaviour
                 else
                 {
                     P1Area[5, ran] = type;
+                    tempStorage = new object[] { 5, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else
@@ -275,6 +288,17 @@ public class Player1Reinforce : MonoBehaviour
                 P1Area[temp, ran] = "$";
                 P1Area[temp + 1, ran - 1] = "$";
                 P1Area[temp + 1, ran] = "$";
+                tempStorage = new object[] { temp, ran - 1, "$" };
+                BroadcastMessage("Spawn", tempStorage);
+            }
+            else
+            {
+                P1Area[temp2, ran - 1] = "$";
+                P1Area[temp2, ran] = "$";
+                P1Area[temp2 + 1, ran - 1] = "$";
+                P1Area[temp2 + 1, ran] = "$";
+                tempStorage = new object[] { temp, ran - 1, "$" };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
         else if (P1Area[3, ran] != " ")
@@ -283,6 +307,8 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[4, ran] = "S";
                 P1Area[5, ran] = "S";
+                tempStorage = new object[] { 4, ran, "S" };
+                BroadcastMessage("Spawn", tempStorage);
             }
             else if (P1Area[3, ran] == type && (P1Area[2, ran] == type || P1Area[2, ran] == "S"))
             {
@@ -311,11 +337,15 @@ public class Player1Reinforce : MonoBehaviour
                             else
                             {
                                 P1Area[4, ran] = type;
+                                tempStorage = new object[] { 4, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else
                         {
                             P1Area[4, ran] = type;
+                            tempStorage = new object[] { 4, ran, type };
+                            BroadcastMessage("Spawn", tempStorage);
                         }
                     }
                     else if (P1Area[4, ran - 2] == type)
@@ -325,11 +355,15 @@ public class Player1Reinforce : MonoBehaviour
                     else
                     {
                         P1Area[4, ran] = type;
+                        tempStorage = new object[] { 4, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else
                 {
                     P1Area[4, ran] = type;
+                    tempStorage = new object[] { 4, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else if (P1Area[4, ran + 1] == type && P1Area[4, ran + 2] == type)
@@ -339,6 +373,8 @@ public class Player1Reinforce : MonoBehaviour
             else
             {
                 P1Area[4, ran] = type;
+                tempStorage = new object[] { 4, ran, type };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
         else if (P1Area[2, ran] != " ")
@@ -347,6 +383,8 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[3, ran] = "S";
                 P1Area[4, ran] = "S";
+                tempStorage = new object[] { 3, ran, "S" };
+                BroadcastMessage("Spawn", tempStorage);
             }
             if (P1Area[2, ran] == type && (P1Area[1, ran] == type || P1Area[1, ran] == "S"))
             {
@@ -375,11 +413,15 @@ public class Player1Reinforce : MonoBehaviour
                             else
                             {
                                 P1Area[3, ran] = type;
+                                tempStorage = new object[] { 3, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else
                         {
                             P1Area[3, ran] = type;
+                            tempStorage = new object[] { 3, ran, type };
+                            BroadcastMessage("Spawn", tempStorage);
                         }
                     }
                     else if (P1Area[3, ran - 2] == type)
@@ -389,11 +431,15 @@ public class Player1Reinforce : MonoBehaviour
                     else
                     {
                         P1Area[3, ran] = type;
+                        tempStorage = new object[] { 3, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else
                 {
                     P1Area[3, ran] = type;
+                    tempStorage = new object[] { 3, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else if (P1Area[3, ran + 1] == type && P1Area[3, ran + 2] == type)
@@ -403,6 +449,8 @@ public class Player1Reinforce : MonoBehaviour
             else
             {
                 P1Area[3, ran] = type;
+                tempStorage = new object[] { 3, ran, type };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
         else if (P1Area[1, ran] != " ")
@@ -411,6 +459,8 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[2, ran] = "S";
                 P1Area[3, ran] = "S";
+                tempStorage = new object[] { 2, ran, "S" };
+                BroadcastMessage("Spawn", tempStorage);
             }
             else if (P1Area[1, ran] == type && P1Area[0, ran] == type)
             {
@@ -435,11 +485,15 @@ public class Player1Reinforce : MonoBehaviour
                             else
                             {
                                 P1Area[2, ran] = type;
+                                tempStorage = new object[] { 2, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else
                         {
                             P1Area[2, ran] = type;
+                            tempStorage = new object[] { 2, ran, type };
+                            BroadcastMessage("Spawn", tempStorage);
                         }
                     }
                     else if (P1Area[2, ran - 2] == type)
@@ -449,11 +503,15 @@ public class Player1Reinforce : MonoBehaviour
                     else
                     {
                         P1Area[2, ran] = type;
+                        tempStorage = new object[] { 2, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else
                 {
                     P1Area[2, ran] = type;
+                    tempStorage = new object[] { 2, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else if (P1Area[2, ran + 1] == type && P1Area[2, ran + 2] == type)
@@ -463,6 +521,8 @@ public class Player1Reinforce : MonoBehaviour
             else
             {
                 P1Area[2, ran] = type;
+                tempStorage = new object[] { 2, ran, type };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
         else if (P1Area[0, ran] != " ")
@@ -471,6 +531,8 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[1, ran] = "S";
                 P1Area[2, ran] = "S";
+                tempStorage = new object[] { 1, ran, "S" };
+                BroadcastMessage("Spawn", tempStorage);
             }
             else if (ran != 0)
             {
@@ -491,6 +553,8 @@ public class Player1Reinforce : MonoBehaviour
                             else
                             {
                                 P1Area[1, ran] = type;
+                                tempStorage = new object[] { 1, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else
@@ -505,11 +569,15 @@ public class Player1Reinforce : MonoBehaviour
                     else
                     {
                         P1Area[1, ran] = type;
+                        tempStorage = new object[] { 1, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else
                 {
                     P1Area[1, ran] = type;
+                    tempStorage = new object[] { 1, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else if (P1Area[1, ran + 1] == type && P1Area[1, ran + 2] == type)
@@ -519,6 +587,8 @@ public class Player1Reinforce : MonoBehaviour
             else
             {
                 P1Area[1, ran] = type;
+                tempStorage = new object[] { 1, ran, type };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
         else
@@ -527,6 +597,8 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[0, ran] = "S";
                 P1Area[1, ran] = "S";
+                tempStorage = new object[] { 0, ran, "S" };
+                BroadcastMessage("Spawn", tempStorage);
             }
             else if (ran != 0)
             {
@@ -547,11 +619,15 @@ public class Player1Reinforce : MonoBehaviour
                             else
                             {
                                 P1Area[0, ran] = type;
+                                tempStorage = new object[] { 0, ran, type };
+                                BroadcastMessage("Spawn", tempStorage);
                             }
                         }
                         else
                         {
                             P1Area[0, ran] = type;
+                            tempStorage = new object[] { 0, ran, type };
+                            BroadcastMessage("Spawn", tempStorage);
                         }
                     }
                     else if (P1Area[0, ran - 2] == type)
@@ -561,11 +637,15 @@ public class Player1Reinforce : MonoBehaviour
                     else
                     {
                         P1Area[0, ran] = type;
+                        tempStorage = new object[] { 0, ran, type };
+                        BroadcastMessage("Spawn", tempStorage);
                     }
                 }
                 else
                 {
                     P1Area[0, ran] = type;
+                    tempStorage = new object[] { 0, ran, type };
+                    BroadcastMessage("Spawn", tempStorage);
                 }
             }
             else if (P1Area[0, ran + 1] == type && P1Area[0, ran + 2] == type)
@@ -575,6 +655,8 @@ public class Player1Reinforce : MonoBehaviour
             else
             {
                 P1Area[0, ran] = type;
+                tempStorage = new object[] { 0, ran, type };
+                BroadcastMessage("Spawn", tempStorage);
             }
         }
 
@@ -596,4 +678,6 @@ public class Player1Reinforce : MonoBehaviour
             isStart = false;
         }
     }
+
+    //add code that checks if there is any merging
 }
