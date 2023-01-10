@@ -246,7 +246,7 @@ public class Player1Reinforce : MonoBehaviour
                     P1Area[temp2, ran] = "$";
                     P1Area[temp2 + 1, ran - 1] = "$";
                     P1Area[temp2 + 1, ran] = "$";
-                    tempStorage = new object[] {temp, ran - 1, "$"};
+                    tempStorage = new object[] {temp2, ran - 1, "$"};
                     BroadcastMessage("Spawn", tempStorage);
                 }
             }
@@ -305,8 +305,8 @@ public class Player1Reinforce : MonoBehaviour
         {
             if (type == "S")
             {
-                P1Area[1, ran] = "S";
                 P1Area[2, ran] = "S";
+                P1Area[3, ran] = "S";
                 tempStorage = new object[] {2, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
             }

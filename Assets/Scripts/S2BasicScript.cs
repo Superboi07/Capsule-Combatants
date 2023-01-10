@@ -19,19 +19,19 @@ public class S2BasicScript : MonoBehaviour
         {
             if (PlayerNum == 1)
             {
-                if (this.transform.position.x == PosData.XAxis[0])
+                if (this.transform.position.x == PosData.XAxis[0] + 0.5f)
                 {
                     Position[0] = 0;
                 }
-                else if (this.transform.position.x == PosData.XAxis[1])
+                else if (this.transform.position.x == PosData.XAxis[1] + 0.5f)
                 {
                     Position[0] = 1;
                 }
-                else if (this.transform.position.x == PosData.XAxis[2])
+                else if (this.transform.position.x == PosData.XAxis[2] + 0.5f)
                 {
                     Position[0] = 2;
                 }
-                else if (this.transform.position.x == PosData.XAxis[3])
+                else if (this.transform.position.x == PosData.XAxis[3] + 0.5f)
                 {
                     Position[0] = 3;
                 }
@@ -42,19 +42,19 @@ public class S2BasicScript : MonoBehaviour
             }
             else
             {
-                if (this.transform.position.x == PosData.XAxis[6])
+                if (this.transform.position.x == PosData.XAxis[6] + 0.5f)
                 {
                     Position[0] = 0;
                 }
-                else if (this.transform.position.x == PosData.XAxis[7])
+                else if (this.transform.position.x == PosData.XAxis[7] + 0.5f)
                 {
                     Position[0] = 1;
                 }
-                else if (this.transform.position.x == PosData.XAxis[8])
+                else if (this.transform.position.x == PosData.XAxis[8] + 0.5f)
                 {
                     Position[0] = 2;
                 }
-                else if (this.transform.position.x == PosData.XAxis[9])
+                else if (this.transform.position.x == PosData.XAxis[9] + 0.5f)
                 {
                     Position[0] = 3;
                 }
@@ -64,27 +64,27 @@ public class S2BasicScript : MonoBehaviour
                 }
             }
 
-            if (this.transform.position.y == PosData.YAxis[0])
+            if (this.transform.position.y == PosData.YAxis[0] + 0.5f)
             {
                 Position[1] = 0;
             }
-            else if (this.transform.position.y == PosData.YAxis[1])
+            else if (this.transform.position.y == PosData.YAxis[1] + 0.5f)
             {
                 Position[1] = 1;
             }
-            else if (this.transform.position.y == PosData.YAxis[2])
+            else if (this.transform.position.y == PosData.YAxis[2] + 0.5f)
             {
                 Position[1] = 2;
             }
-            else if (this.transform.position.y == PosData.YAxis[3])
+            else if (this.transform.position.y == PosData.YAxis[3] + 0.5f)
             {
                 Position[1] = 3;
             }
-            else if (this.transform.position.y == PosData.YAxis[4])
+            else if (this.transform.position.y == PosData.YAxis[4] + 0.5f)
             {
                 Position[1] = 4;
             }
-            else if (this.transform.position.y == PosData.YAxis[5])
+            else if (this.transform.position.y == PosData.YAxis[5] + 0.5f)
             {
                 Position[1] = 5;
             }
@@ -110,7 +110,8 @@ public class S2BasicScript : MonoBehaviour
                 temp2 += 6;
             }
 
-            MundD = new Vector3(PosData.XAxis[(int)temp[0]] + 1.5f, PosData.YAxis[(int)temp[1]] + 0.5f, this.transform.position.z);
+            MundD = new Vector3(PosData.XAxis[(int)temp[0]] + 0.5f, PosData.YAxis[(int)temp[1]] + 0.5f, this.transform.position.z);
+            Debug.Log(temp[0] + ", " + temp[1]);
 
             Instantiate(this, MundD, this.transform.rotation, ParentObj.transform);
         }
