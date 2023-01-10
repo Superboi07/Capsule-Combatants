@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RedBasicScript : MonoBehaviour
+public class BlueBasicScript : MonoBehaviour
 {
     public PosData PosData;
     public GameObject ParentObj;
@@ -110,7 +110,7 @@ public class RedBasicScript : MonoBehaviour
 
     void Spawn(object[] temp)
     {
-        if ((string)temp[2] == "r" && this.transform.position.x == 0.0f)
+        if ((string)temp[2] == "b" && this.transform.position.x == 0.0f)
         {
             if (PlayerNum == 2)
             {

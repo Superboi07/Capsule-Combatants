@@ -8,9 +8,9 @@ public class Player1Reinforce : MonoBehaviour
     public static int P1Points;
     public static int P1SpecialPoints;
 
-    public static string[,] P1Area = new string[,] { { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " }, { " ", " ", " ", " ", " ", " ", " " } };
+    public static string[,] P1Area = new string[,] {{" ", " ", " ", " ", " ", " ", " "}, {" ", " ", " ", " ", " ", " ", " "}, {" ", " ", " ", " ", " ", " ", " "}, {" ", " ", " ", " ", " ", " ", " "}, {" ", " ", " ", " ", " ", " ", " "}, {" ", " ", " ", " ", " ", " ", " "}};
 
-    object[] tempStorage = new object[] { 0, 0, " " };
+    object[] tempStorage = new object[] {0, 0, " "};
 
     bool isStart;
     bool ReapOnce;
@@ -135,9 +135,9 @@ public class Player1Reinforce : MonoBehaviour
 
             if (ran == prevOrgin)
             {
-                if (type == "r" || type == "b" || type == "g")
+                if (type == "$")
                 {
-                    P1Points += 1;
+                    P1Points += 10;
                 }
                 else if (type == "S")
                 {
@@ -145,13 +145,11 @@ public class Player1Reinforce : MonoBehaviour
                 }
                 else
                 {
-                    P1Points += 10;
+                    P1Points += 1;
                 }
+                
+                Debug.Log(type + " overflowed");
             }
-        }
-        else if (ran == 6 && type == "$")
-        {
-            Place(type, true, ran);
         }
         else if (P1Area[5, ran] != " ")
         {
@@ -159,146 +157,98 @@ public class Player1Reinforce : MonoBehaviour
         }
         else if (P1Area[4, ran] != " ")
         {
-            if (type != "S" && type != "$")
+            if (type == "S" || type == "$")
             {
-                if (P1Area[4, ran] == type && (P1Area[3, ran] == type || P1Area[3, ran] == "S"))
+                Place(type, true, ran);
+            } 
+            else
+            {
+                tempStorage = new object[] {5, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
                 {
-                    Place(type, true, ran);
-                }
-                else if (ran != 0)
-                {
-                    if (P1Area[3, ran] == "$" && P1Area[4, ran] == type && ((P1Area[3, ran - 1] == "$" && P1Area[4, ran - 1] == type && P1Area[5, ran - 1] == type) || (ran != 6 && P1Area[3, ran + 1] == "$" && P1Area[4, ran + 1] == type && P1Area[5, ran + 1] == type)))
-                    {
-                        Place(type, true, ran);
-                    }
-                    else if (P1Area[5, ran - 1] == type)
-                    {
-                        if (ran != 6)
-                        {
-                            if (P1Area[5, ran + 1] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else if (ran != 1)
-                            {
-                                if (P1Area[5, ran - 2] == type)
-                                {
-                                    Place(type, true, ran);
-                                }
-                                else
-                                {
-                                    P1Area[5, ran] = type;
-                                    tempStorage = new object[] { 5, ran, type };
-                                    BroadcastMessage("Spawn", tempStorage);
-                                }
-                            }
-                            else
-                            {
-                                P1Area[5, ran] = type;
-                                tempStorage = new object[] { 5, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else if (P1Area[5, ran - 2] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else
-                        {
-                            P1Area[5, ran] = type;
-                            tempStorage = new object[] { 5, ran, type };
-                            BroadcastMessage("Spawn", tempStorage);
-                        }
-                    }
-                    else
-                    {
-                        P1Area[5, ran] = type;
-                        tempStorage = new object[] { 5, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
-                }
-                else if (P1Area[5, ran + 1] == type && P1Area[5, ran + 2] == type)
-                {
-                    Place(type, true, ran);
+                    P1Area[5, ran] = type;
+                    BroadcastMessage("Spawn", tempStorage);   
                 }
                 else
                 {
-                    P1Area[5, ran] = type;
-                    tempStorage = new object[] { 5, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
+                    Place(type, true, ran);
                 }
-            }
-            else
-            {
-                Place(type, true, ran);
             }
         }
         else if (type == "$")
         {
-            int temp;
-            int temp2;
+            if (ran == 6)
+            {
+                Place(type, true, ran);
+            }
+            else 
+            {    
+                int temp;
+                int temp2;
+            
+                if (P1Area[3, ran] != " ")
+                {
+                    temp = 4;
+                }
+                else if (P1Area[2, ran] != " ")
+                {
+                    temp = 3;
+                }
+                else if (P1Area[1, ran] != " ")
+                {
+                    temp = 2;
+                }
+                else if (P1Area[0, ran] != " ")
+                {
+                    temp = 1;
+                }
+                else
+                {
+                    temp = 0;
+                }
 
-            if (P1Area[3, ran] != " ")
-            {
-                temp = 4;
-            }
-            else if (P1Area[2, ran] != " ")
-            {
-                temp = 3;
-            }
-            else if (P1Area[1, ran] != " ")
-            {
-                temp = 2;
-            }
-            else if (P1Area[0, ran] != " ")
-            {
-                temp = 1;
-            }
-            else
-            {
-                temp = 0;
-            }
+                ran += 1;
 
-            ran += 1;
+                if (P1Area[3, ran] != " ")
+                {
+                    temp2 = 4;
+                }
+                else if (P1Area[2, ran] != " ")
+                {
+                    temp2 = 3;
+                }
+                else if (P1Area[1, ran] != " ")
+                {
+                    temp2 = 2;
+                }
+                else if (P1Area[0, ran] != " ")
+                {
+                    temp2 = 1;
+                }
+                else
+                {
+                    temp2 = 0;
+                }
 
-            if (P1Area[3, ran] != " ")
-            {
-                temp2 = 4;
-            }
-            else if (P1Area[2, ran] != " ")
-            {
-                temp2 = 3;
-            }
-            else if (P1Area[1, ran] != " ")
-            {
-                temp2 = 2;
-            }
-            else if (P1Area[0, ran] != " ")
-            {
-                temp2 = 1;
-            }
-            else
-            {
-                temp2 = 0;
-            }
-
-            if (temp >= temp2)
-            {
-                P1Area[temp, ran - 1] = "$";
-                P1Area[temp, ran] = "$";
-                P1Area[temp + 1, ran - 1] = "$";
-                P1Area[temp + 1, ran] = "$";
-                tempStorage = new object[] { temp, ran - 1, "$" };
-                BroadcastMessage("Spawn", tempStorage);
-            }
-            else
-            {
-                P1Area[temp2, ran - 1] = "$";
-                P1Area[temp2, ran] = "$";
-                P1Area[temp2 + 1, ran - 1] = "$";
-                P1Area[temp2 + 1, ran] = "$";
-                tempStorage = new object[] { temp, ran - 1, "$" };
-                BroadcastMessage("Spawn", tempStorage);
+                if (temp >= temp2)
+                {
+                    P1Area[temp, ran - 1] = "$";
+                    P1Area[temp, ran] = "$";
+                    P1Area[temp + 1, ran - 1] = "$";
+                    P1Area[temp + 1, ran] = "$";
+                    tempStorage = new object[] {temp, ran - 1, "$"};
+                    BroadcastMessage("Spawn", tempStorage);
+                }
+                else
+                {
+                    P1Area[temp2, ran - 1] = "$";
+                    P1Area[temp2, ran] = "$";
+                    P1Area[temp2 + 1, ran - 1] = "$";
+                    P1Area[temp2 + 1, ran] = "$";
+                    tempStorage = new object[] {temp, ran - 1, "$"};
+                    BroadcastMessage("Spawn", tempStorage);
+                }
             }
         }
         else if (P1Area[3, ran] != " ")
@@ -307,74 +257,23 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[4, ran] = "S";
                 P1Area[5, ran] = "S";
-                tempStorage = new object[] { 4, ran, "S" };
+                tempStorage = new object[] {4, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
-            }
-            else if (P1Area[3, ran] == type && (P1Area[2, ran] == type || P1Area[2, ran] == "S"))
-            {
-                Place(type, true, ran);
-            }
-            else if (ran != 0)
-            {
-                if (P1Area[2, ran] == "$" && P1Area[3, ran] == type && ((P1Area[2, ran - 1] == "$" && P1Area[3, ran - 1] == type && P1Area[4, ran - 1] == type) || (ran != 6 && P1Area[2, ran + 1] == "$" && P1Area[3, ran + 1] == type && P1Area[4, ran + 1] == type)))
-                {
-                    Place(type, true, ran);
-                }
-                else if (P1Area[4, ran - 1] == type)
-                {
-                    if (ran != 6)
-                    {
-                        if (P1Area[4, ran + 1] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else if (ran != 1)
-                        {
-                            if (P1Area[4, ran - 2] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else
-                            {
-                                P1Area[4, ran] = type;
-                                tempStorage = new object[] { 4, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else
-                        {
-                            P1Area[4, ran] = type;
-                            tempStorage = new object[] { 4, ran, type };
-                            BroadcastMessage("Spawn", tempStorage);
-                        }
-                    }
-                    else if (P1Area[4, ran - 2] == type)
-                    {
-                        Place(type, true, ran);
-                    }
-                    else
-                    {
-                        P1Area[4, ran] = type;
-                        tempStorage = new object[] { 4, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
-                }
-                else
-                {
-                    P1Area[4, ran] = type;
-                    tempStorage = new object[] { 4, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
-                }
-            }
-            else if (P1Area[4, ran + 1] == type && P1Area[4, ran + 2] == type)
-            {
-                Place(type, true, ran);
             }
             else
             {
-                P1Area[4, ran] = type;
-                tempStorage = new object[] { 4, ran, type };
-                BroadcastMessage("Spawn", tempStorage);
+                tempStorage = new object[] {4, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
+                {
+                    P1Area[4, ran] = type;
+                    tempStorage = new object[] {4, ran, type};
+                    BroadcastMessage("Spawn", tempStorage);   
+                }
+                else
+                {
+                    Place(type, true, ran);
+                }
             }
         }
         else if (P1Area[2, ran] != " ")
@@ -383,146 +282,48 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[3, ran] = "S";
                 P1Area[4, ran] = "S";
-                tempStorage = new object[] { 3, ran, "S" };
+                tempStorage = new object[] {3, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
-            }
-            if (P1Area[2, ran] == type && (P1Area[1, ran] == type || P1Area[1, ran] == "S"))
-            {
-                Place(type, true, ran);
-            }
-            else if (ran != 0)
-            {
-                if (P1Area[1, ran] == "$" && P1Area[2, ran] == type && ((P1Area[1, ran - 1] == "$" && P1Area[2, ran - 1] == type && P1Area[3, ran - 1] == type) || (ran != 6 && P1Area[1, ran + 1] == "$" && P1Area[2, ran + 1] == type && P1Area[3, ran + 1] == type)))
-                {
-                    Place(type, true, ran);
-                }
-                else if (P1Area[3, ran - 1] == type)
-                {
-                    if (ran != 6)
-                    {
-                        if (P1Area[3, ran + 1] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else if (ran != 1)
-                        {
-                            if (P1Area[3, ran - 2] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else
-                            {
-                                P1Area[3, ran] = type;
-                                tempStorage = new object[] { 3, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else
-                        {
-                            P1Area[3, ran] = type;
-                            tempStorage = new object[] { 3, ran, type };
-                            BroadcastMessage("Spawn", tempStorage);
-                        }
-                    }
-                    else if (P1Area[3, ran - 2] == type)
-                    {
-                        Place(type, true, ran);
-                    }
-                    else
-                    {
-                        P1Area[3, ran] = type;
-                        tempStorage = new object[] { 3, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
-                }
-                else
-                {
-                    P1Area[3, ran] = type;
-                    tempStorage = new object[] { 3, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
-                }
-            }
-            else if (P1Area[3, ran + 1] == type && P1Area[3, ran + 2] == type)
-            {
-                Place(type, true, ran);
             }
             else
             {
-                P1Area[3, ran] = type;
-                tempStorage = new object[] { 3, ran, type };
-                BroadcastMessage("Spawn", tempStorage);
+                tempStorage = new object[] {3, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
+                {
+                    P1Area[3, ran] = type;
+                    tempStorage = new object[] {3, ran, type};
+                    BroadcastMessage("Spawn", tempStorage);   
+                }
+                else
+                {
+                    Place(type, true, ran);
+                }
             }
         }
         else if (P1Area[1, ran] != " ")
         {
             if (type == "S")
             {
+                P1Area[1, ran] = "S";
                 P1Area[2, ran] = "S";
-                P1Area[3, ran] = "S";
-                tempStorage = new object[] { 2, ran, "S" };
+                tempStorage = new object[] {2, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
-            }
-            else if (P1Area[1, ran] == type && P1Area[0, ran] == type)
-            {
-                Place(type, true, ran);
-            }
-            else if (ran != 0)
-            {
-                if (P1Area[2, ran - 1] == type)
-                {
-                    if (ran != 6)
-                    {
-                        if (P1Area[2, ran + 1] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else if (ran != 1)
-                        {
-                            if (P1Area[2, ran - 2] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else
-                            {
-                                P1Area[2, ran] = type;
-                                tempStorage = new object[] { 2, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else
-                        {
-                            P1Area[2, ran] = type;
-                            tempStorage = new object[] { 2, ran, type };
-                            BroadcastMessage("Spawn", tempStorage);
-                        }
-                    }
-                    else if (P1Area[2, ran - 2] == type)
-                    {
-                        Place(type, true, ran);
-                    }
-                    else
-                    {
-                        P1Area[2, ran] = type;
-                        tempStorage = new object[] { 2, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
-                }
-                else
-                {
-                    P1Area[2, ran] = type;
-                    tempStorage = new object[] { 2, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
-                }
-            }
-            else if (P1Area[2, ran + 1] == type && P1Area[2, ran + 2] == type)
-            {
-                Place(type, true, ran);
             }
             else
             {
-                P1Area[2, ran] = type;
-                tempStorage = new object[] { 2, ran, type };
-                BroadcastMessage("Spawn", tempStorage);
+                tempStorage = new object[] {2, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
+                {
+                    P1Area[2, ran] = type;
+                    tempStorage = new object[] {2, ran, type};
+                    BroadcastMessage("Spawn", tempStorage);   
+                }
+                else
+                {
+                    Place(type, true, ran);
+                }
             }
         }
         else if (P1Area[0, ran] != " ")
@@ -531,65 +332,24 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[1, ran] = "S";
                 P1Area[2, ran] = "S";
-                tempStorage = new object[] { 1, ran, "S" };
+                tempStorage = new object[] {1, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
-            }
-            else if (ran != 0)
+            }   
+            else 
             {
-                if (P1Area[1, ran - 1] == type)
+                tempStorage = new object[] {1, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
                 {
-                    if (ran != 6)
-                    {
-                        if (P1Area[1, ran + 1] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else if (ran != 1)
-                        {
-                            if (P1Area[1, ran - 2] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else
-                            {
-                                P1Area[1, ran] = type;
-                                tempStorage = new object[] { 1, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else
-                        {
-                            P1Area[1, ran] = type;
-                        }
-                    }
-                    else if (P1Area[1, ran - 2] == type)
-                    {
-                        Place(type, true, ran);
-                    }
-                    else
-                    {
-                        P1Area[1, ran] = type;
-                        tempStorage = new object[] { 1, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
+                    P1Area[1, ran] = type;
+                    tempStorage = new object[] {1, ran, type};
+                    BroadcastMessage("Spawn", tempStorage);   
                 }
                 else
                 {
-                    P1Area[1, ran] = type;
-                    tempStorage = new object[] { 1, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
+                    Place(type, true, ran);
                 }
-            }
-            else if (P1Area[1, ran + 1] == type && P1Area[1, ran + 2] == type)
-            {
-                Place(type, true, ran);
-            }
-            else
-            {
-                P1Area[1, ran] = type;
-                tempStorage = new object[] { 1, ran, type };
-                BroadcastMessage("Spawn", tempStorage);
-            }
+            }   
         }
         else
         {
@@ -597,67 +357,24 @@ public class Player1Reinforce : MonoBehaviour
             {
                 P1Area[0, ran] = "S";
                 P1Area[1, ran] = "S";
-                tempStorage = new object[] { 0, ran, "S" };
+                tempStorage = new object[] {0, ran, "S"};
                 BroadcastMessage("Spawn", tempStorage);
-            }
-            else if (ran != 0)
-            {
-                if (P1Area[0, ran - 1] == type)
-                {
-                    if (ran != 6)
-                    {
-                        if (P1Area[0, ran + 1] == type)
-                        {
-                            Place(type, true, ran);
-                        }
-                        else if (ran != 1)
-                        {
-                            if (P1Area[0, ran - 2] == type)
-                            {
-                                Place(type, true, ran);
-                            }
-                            else
-                            {
-                                P1Area[0, ran] = type;
-                                tempStorage = new object[] { 0, ran, type };
-                                BroadcastMessage("Spawn", tempStorage);
-                            }
-                        }
-                        else
-                        {
-                            P1Area[0, ran] = type;
-                            tempStorage = new object[] { 0, ran, type };
-                            BroadcastMessage("Spawn", tempStorage);
-                        }
-                    }
-                    else if (P1Area[0, ran - 2] == type)
-                    {
-                        Place(type, true, ran);
-                    }
-                    else
-                    {
-                        P1Area[0, ran] = type;
-                        tempStorage = new object[] { 0, ran, type };
-                        BroadcastMessage("Spawn", tempStorage);
-                    }
-                }
-                else
-                {
-                    P1Area[0, ran] = type;
-                    tempStorage = new object[] { 0, ran, type };
-                    BroadcastMessage("Spawn", tempStorage);
-                }
-            }
-            else if (P1Area[0, ran + 1] == type && P1Area[0, ran + 2] == type)
-            {
-                Place(type, true, ran);
             }
             else
             {
-                P1Area[0, ran] = type;
-                tempStorage = new object[] { 0, ran, type };
-                BroadcastMessage("Spawn", tempStorage);
-            }
+                tempStorage = new object[] {0, ran, type};
+
+                if ((string)CheckMerge(tempStorage) == "x")
+                {
+                    P1Area[0, ran] = type;
+                    tempStorage = new object[] {0, ran, type};
+                    BroadcastMessage("Spawn", tempStorage);   
+                }
+                else
+                {
+                    Place(type, true, ran);
+                }
+            }            
         }
 
         if (P1Points > 0)
@@ -679,5 +396,84 @@ public class Player1Reinforce : MonoBehaviour
         }
     }
 
-    //add code that checks if there is any merging
+    string CheckMerge(object[] temp)
+    {
+        if ((int)temp[0] >= 3 && (P1Area[(int)temp[0] - 1, (int)temp[1]] == (string)temp[2] && P1Area[(int)temp[0] - 2, (int)temp[1]] == "S"))
+        {
+            Debug.Log("S");
+            return("S");
+        }
+        else if ((int)temp[0] >= 2 && (P1Area[(int)temp[0] - 1, (int)temp[1]] == (string)temp[2] && P1Area[(int)temp[0] - 2, (int)temp[1]] == (string)temp[2]))
+        {
+            Debug.Log("|");
+            return("|");
+        }
+        else if ((int)temp[1] != 0)
+        {
+            if ((int)temp[0] >= 3 && (P1Area[(int)temp[0] - 2, (int)temp[1]] == "$" && P1Area[(int)temp[0] - 1, (int)temp[1]] == (string)temp[2] && ((P1Area[(int)temp[0] - 2, (int)temp[1] - 1] == "$" && P1Area[(int)temp[0] - 1, (int)temp[1] - 1] == (string)temp[2] && P1Area[(int)temp[0], (int)temp[1] - 1] == (string)temp[2]) || ((int)temp[1] != 6 && P1Area[(int)temp[0] - 2, (int)temp[1] + 1] == "$" && P1Area[(int)temp[0] - 1, (int)temp[1] + 1] == (string)temp[2] && P1Area[(int)temp[0], (int)temp[1] + 1] == (string)temp[2]))))
+            {
+                Debug.Log("$");
+                return("$");
+            }
+            else if (P1Area[(int)temp[0], (int)temp[1] - 1] == (string)temp[2])
+            {
+                if ((int)temp[1] != 6)
+                {
+                    if (P1Area[(int)temp[0], (int)temp[1] + 1] == (string)temp[2])
+                    {
+                        Debug.Log("_");
+                        return("_");
+                    }
+                    else if ((int)temp[1] != 1)
+                    {
+                        if (P1Area[(int)temp[0], (int)temp[1] - 2] == (string)temp[2])
+                        {
+                            Debug.Log("_");
+                            return("_");
+                        }
+                        else
+                        {
+                            Debug.Log("x");
+                            return("x");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("x");
+                        return("x");
+                    }
+                }
+                else if (P1Area[(int)temp[0], (int)temp[1] - 2] == (string)temp[2])
+                {
+                    Debug.Log("_");
+                    return("_");
+                }
+                else
+                {
+                    Debug.Log("x");
+                    return("x");
+                }
+            }
+            else if ((int)temp[1] < 5 && P1Area[(int)temp[0], (int)temp[1] + 1] == (string)temp[2] && P1Area[(int)temp[0], (int)temp[1] + 2] == (string)temp[2])
+            {
+                Debug.Log("_");
+                return("_");
+            }
+            else
+            {
+                Debug.Log("x");
+                return("x");
+            }
+        }
+        else if ((int)temp[1] < 5 && P1Area[(int)temp[0], (int)temp[1] + 1] == (string)temp[2] && P1Area[(int)temp[0], (int)temp[1] + 2] == (string)temp[2])
+        {
+            Debug.Log("_");
+            return("_");
+        }
+        else
+        {
+            Debug.Log("x");
+            return("x");
+        }
+    }
 }

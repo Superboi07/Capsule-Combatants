@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RedBasicScript : MonoBehaviour
+public class S2BasicScript : MonoBehaviour
 {
     public PosData PosData;
     public GameObject ParentObj;
@@ -35,13 +35,9 @@ public class RedBasicScript : MonoBehaviour
                 {
                     Position[0] = 3;
                 }
-                else if (this.transform.position.x == PosData.XAxis[4])
-                {
-                    Position[0] = 4;
-                }
                 else
                 {
-                    Position[0] = 5;
+                    Position[0] = 4;
                 }
             }
             else
@@ -62,13 +58,9 @@ public class RedBasicScript : MonoBehaviour
                 {
                     Position[0] = 3;
                 }
-                else if (this.transform.position.x == PosData.XAxis[10])
-                {
-                    Position[0] = 4;
-                }
                 else
                 {
-                    Position[0] = 5;
+                    Position[0] = 4;
                 }
             }
 
@@ -110,7 +102,7 @@ public class RedBasicScript : MonoBehaviour
 
     void Spawn(object[] temp)
     {
-        if ((string)temp[2] == "r" && this.transform.position.x == 0.0f)
+        if ((string)temp[2] == "$" && this.transform.position.x == 0.0f)
         {
             if (PlayerNum == 2)
             {
@@ -118,7 +110,7 @@ public class RedBasicScript : MonoBehaviour
                 temp2 += 6;
             }
 
-            MundD = new Vector3(PosData.XAxis[(int)temp[0]], PosData.YAxis[(int)temp[1]], this.transform.position.z);
+            MundD = new Vector3(PosData.XAxis[(int)temp[0]] + 1.5f, PosData.YAxis[(int)temp[1]] + 0.5f, this.transform.position.z);
 
             Instantiate(this, MundD, this.transform.rotation, ParentObj.transform);
         }

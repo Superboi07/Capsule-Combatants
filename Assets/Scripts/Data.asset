@@ -12,5 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8e23eec378348f48ba128b1952c0be8, type: 3}
   m_Name: Data
   m_EditorClassIdentifier: 
-  XAxis: []
-  YAxis: []
+  XAxis:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - -1
+  - -2
+  - -3
+  - -4
+  - -5
+  - -6
+  YAxis:
+  - -3
+  - -2
+  - -1
+  - 0
+  - 1
+  - 2
+  - 3
