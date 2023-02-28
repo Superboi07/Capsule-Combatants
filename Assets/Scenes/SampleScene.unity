@@ -219,6 +219,8 @@ GameObject:
   - component: {fileID: 775304413}
   - component: {fileID: 775304416}
   - component: {fileID: 775304415}
+  - component: {fileID: 775304417}
+  - component: {fileID: 775304418}
   m_Layer: 0
   m_Name: P1RedBasicUnit
   m_TagString: Untagged
@@ -317,10 +319,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc9b006761aca2940b1e60760f291426, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &775304417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775304412}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795c532c04d645f428b0158aed5982d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   PosData: {fileID: 11400000, guid: 5e93002476fe053458efdbeac71a99a1, type: 2}
   ParentObj: {fileID: 1681110855}
   PlayerNum: 0
+  Colour: 
   Position: 0000000000000000
+--- !u!58 &775304418
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 775304412}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &866411174
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,6 +364,8 @@ GameObject:
   - component: {fileID: 866411178}
   - component: {fileID: 866411176}
   - component: {fileID: 866411179}
+  - component: {fileID: 866411180}
+  - component: {fileID: 866411181}
   m_Layer: 0
   m_Name: P1GreenBasicUnit
   m_TagString: Untagged
@@ -431,10 +464,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03c617e34a3fc1342a8b21f4871c379a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &866411180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866411174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795c532c04d645f428b0158aed5982d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   PosData: {fileID: 11400000, guid: 5e93002476fe053458efdbeac71a99a1, type: 2}
   ParentObj: {fileID: 1681110855}
   PlayerNum: 0
+  Colour: 
   Position: 0000000000000000
+--- !u!58 &866411181
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866411174}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &1122981888
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,6 +509,8 @@ GameObject:
   - component: {fileID: 1122981892}
   - component: {fileID: 1122981890}
   - component: {fileID: 1122981893}
+  - component: {fileID: 1122981894}
+  - component: {fileID: 1122981895}
   m_Layer: 0
   m_Name: P1BlueBasicUnit
   m_TagString: Untagged
@@ -545,10 +609,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d533c4bacbe5a343ae5c32dfd650e87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1122981894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1122981888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795c532c04d645f428b0158aed5982d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   PosData: {fileID: 11400000, guid: 5e93002476fe053458efdbeac71a99a1, type: 2}
   ParentObj: {fileID: 1681110855}
   PlayerNum: 0
+  Colour: 
   Position: 0000000000000000
+--- !u!58 &1122981895
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1122981888}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &1145856677
 GameObject:
   m_ObjectHideFlags: 0
