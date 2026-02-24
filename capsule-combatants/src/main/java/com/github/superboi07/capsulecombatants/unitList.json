@@ -1,8 +1,0 @@
-{
-    "name": "test unit",
-    "icon": "t",
-    "health": 10,
-    "attack": 5,
-    "speed": 2,
-    "other": 0
-}
