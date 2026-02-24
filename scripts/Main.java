@@ -1,9 +1,3 @@
-package com.github.superboi07.capsulecombatants;
-
-import java.io.FileReader;
-//import org.json.simple.*;
-import org.json.simple.JSONObject;
-//import org.json.simple.parser.*;
 class Main {
 
     static String[][][] board = new String[2][6][7];
@@ -11,25 +5,14 @@ class Main {
     static int startingPoints = 35;
     static int[] points = new int[] {startingPoints, startingPoints};
 
-    //static Unit[][] units = new Unit[2][5];
+    static Unit[][] units = new Unit[2][5];
     
     public static void main(String[] args) {
-        //clearBoard();
-        //printBoard();
+        clearBoard();
+        printBoard();
 
-        //reinforce(0);
-        //reinforce(1);
-
-        // The file JSON.json is parsed
-        //Object object = new JSONParser().parse(new FileReader("unitList.json"));
-
-        // objc is convereted to JSON object
-        //JSONObject jsonObject = (JSONObject)object;
-
-        //String bame = (String)jsonObject.get("name");
-        //System.out.println(bame);
-
-        //JSONObject geekWriterObject = new JSONObject();
+        reinforce(0);
+        reinforce(1);    
     }
 
     static void clearBoard() {
