@@ -1,16 +1,54 @@
-class Unit {
+class Unit implements Cloneable {
     String name;
-    String icon;
+    char icon;
     int health;
     int attack;
+    int growth;
     int speed;
-    int other;
-    public Unit(String name, String icon, int hel, int attack, int speed, int other) {
+    int length;
+    int height;
+    int cost;
+    int special;
+    String color = null;
+
+    public Unit(String name, char icon, int health, int attack, int growth, int speed, int length, int height, int cost,
+            int special) {
         this.name = name;
         this.icon = icon;
         this.health = health;
         this.attack = attack;
+        this.growth = growth;
         this.speed = speed;
-        this.other = other;
+        this.length = length;
+        this.height = height;
+        this.cost = cost;
+        this.special = special;
+    }
+
+    public Unit() {
+        this.name = null;
+        this.icon = '_';
+        this.health = 0;
+        this.attack = 0;
+        this.growth = 0;
+        this.speed = 0;
+        this.length = 1;
+        this.height = 1;
+        this.cost = 0;
+        this.special = 0;
+        this.color = "\u001B[30m";
+    }
+
+    public boolean match(Unit unit) {
+        if (special == 0 && color == unit.color) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }
