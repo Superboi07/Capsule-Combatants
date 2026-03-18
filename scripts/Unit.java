@@ -10,6 +10,8 @@ class Unit implements Cloneable {
     int cost;
     int special;
     String color = null;
+    int max = -1;
+    int topRow = -1;
 
     public Unit(String name, char icon, int health, int attack, int growth, int speed, int length, int height, int cost,
             int special) {
@@ -23,6 +25,11 @@ class Unit implements Cloneable {
         this.height = height;
         this.cost = cost;
         this.special = special;
+        if (special == 1) {
+            max = 2;
+        } else if (special == 2) {
+            max = 1;
+        }
     }
 
     public Unit() {
