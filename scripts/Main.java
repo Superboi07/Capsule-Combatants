@@ -1,26 +1,19 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 import java.util.InputMismatchException;
 import java.util.Random;
 
 class Main {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLACK = "\u001B[30m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_WHITE = "\u001B[37m";
-    public static final String[][] COLORS = new String[][] { { "red", ANSI_RED }, { "blue", ANSI_BLUE },
-            { "green", ANSI_GREEN } };
 
     static Scanner scan = new Scanner(System.in);
     static Random rand = new Random();
 
-    static Unit[][][] board = new Unit[2][6][7];
-    static final Unit BLANK_UNIT = new Unit();
+    static final int BOARD_WIDTH = 7;
+    static final int BOARD_HEIGHT = 6;
+    static Board[] boards = new Board[] {new Board(0, BOARD_WIDTH,BOARD_HEIGHT), new Board(1, BOARD_WIDTH,BOARD_HEIGHT)};
 
     static final int START_POINTS = 35;
     static final int START_HEALTH = 100;
@@ -28,7 +21,7 @@ class Main {
 
     static int[] playerPoints = new int[] { START_POINTS, START_POINTS };
     static int[] playerHealths = new int[] { START_HEALTH, START_HEALTH };
-    static int[] playerActs =  new int[] {START_ACTS,START_ACTS};
+    static int[] playerActs = new int[] { START_ACTS, START_ACTS };
     static int[][] playerSpecialUnitCount = new int[][] { { 0, 0 }, { 0, 0 } };
 
     static ArrayList<Unit> unitList = new ArrayList<Unit>();
@@ -44,40 +37,23 @@ class Main {
         // chooseUnits(0);
         // chooseUnits(1);
 
-        clearBoard();
-        // printBoard();
-
-        /*
-         * for (int i = 0; i < 7; i++) {
-         * Unit temp = (Unit) actUnitTypes[0][0].clone();
-         * temp.color = ANSI_CYAN;
-         * placeUnit(0, temp);
-         * }
-         */
-
         reinforce(0);
-        reinforce(1);
         printBoard();
-    }
 
-    static void clearBoard() {
-        for (int n = 0; n < 2; n++) {
-            for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 7; j++) {
-                    board[n][i][j] = BLANK_UNIT;
-                }
-            }
-        }
+        int temp1 = scan.nextInt();
+        int temp2 = scan.nextInt();
+        boards[0].removeUnit(temp1, temp2);
+        printBoard();
     }
 
     static void printBoard() {
         for (int y = 0; y < 6; y++) {
             for (int x = 0; x < 7; x++) {
-                System.out.print(board[0][y][x].color + board[0][y][x].icon + ANSI_RESET);
+                System.out.print(boards[0].board[y][x].color + boards[0].board[y][x].icon + Unit.ANSI_RESET);
             }
             System.out.print('|');
             for (int x = 6; x > -1; x--) {
-                System.out.print(board[1][y][x].color + board[1][y][x].icon + ANSI_RESET);
+                System.out.print(boards[1].board[y][x].color + boards[1].board[y][x].icon + Unit.ANSI_RESET);
             }
             System.out.println();
         }
@@ -85,8 +61,10 @@ class Main {
     }
 
     static void makeUnitList() {
-        unitList.add(new Unit("barrier 1", 'x', 4, 0, 0, 0, 1, 1, 0, -2));
-        unitList.add(new Unit("barrier 2", 'X', 9, 0, 0, 0, 1, 1, 0, -1));
+        unitList.add(new Unit("barrier 1", 'x', 4, 0, 0, 0, 1, 1, 0, -1));
+        unitList.get(0).color = Unit.ANSI_BLACK;
+        unitList.add(new Unit("barrier 2", 'X', 9, 0, 0, 0, 1, 1, 0, -2));
+        unitList.get(1).color = Unit.ANSI_BLACK;
         unitList.add(new Unit("demo weak", 'u', 2, 5, 5, 1, 1, 1, 1, 0));
         unitList.add(new Unit("demo strong", 'U', 3, 8, 6, 2, 1, 1, 1, 0));
         unitList.add(new Unit("demo special 1", 's', 7, 12, 10, 2, 2, 1, 4, 1));
@@ -97,7 +75,7 @@ class Main {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 3; j++) {
                 actUnitTypes[i][j] = (Unit) unitList.get(2).clone();
-                actUnitTypes[i][j].color = COLORS[j][1];
+                actUnitTypes[i][j].color = Unit.COLORS[j][1];
             }
             actUnitTypes[i][3] = (Unit) unitList.get(4).clone();
             actUnitTypes[i][4] = (Unit) unitList.get(5).clone();
@@ -105,7 +83,7 @@ class Main {
     }
 
     static void chooseUnits(int player) throws CloneNotSupportedException {
-        int theme = 0; 
+        int theme = 0;
         int choice = -1;
         boolean loop = true;
         System.out.println("Player " + player + ":");
@@ -114,8 +92,9 @@ class Main {
             for (int i = 0; i < 3; i++) {
                 while (loop) {
                     try {
-                        System.out.println("choose basic " + COLORS[i][0] + " unit " + ANSI_RESET + ": [1] " + unitList.get(2).name
-                                + ", [2] " + unitList.get(3).name);
+                        System.out.println(
+                                "choose basic " + Unit.COLORS[i][0] + " unit " + Unit.ANSI_RESET + ": [1] " + unitList.get(2).name
+                                        + ", [2] " + unitList.get(3).name);
                         choice = scan.nextInt();
                         if (choice == 1) {
                             actUnitTypes[player][i] = (Unit) unitList.get(2).clone();
@@ -128,7 +107,7 @@ class Main {
                         scan.nextLine();
                     }
                 }
-                actUnitTypes[player][i].color = COLORS[i][1];
+                actUnitTypes[player][i].color = Unit.COLORS[i][1];
                 loop = true;
             }
             actUnitTypes[player][3] = (Unit) unitList.get(4).clone();
@@ -157,7 +136,7 @@ class Main {
                     playerSpecialUnitCount[player][0]++;
                     tempUnit = (Unit) actUnitTypes[player][3].clone();
                     tempRand = rand.nextInt(3);
-                    tempUnit.color = COLORS[tempRand][1];
+                    tempUnit.color = Unit.COLORS[tempRand][1];
                 }
             } else {
                 if (playerSpecialUnitCount[player][1] < actUnitTypes[player][4].max
@@ -165,15 +144,17 @@ class Main {
                     playerSpecialUnitCount[player][1]++;
                     tempUnit = (Unit) actUnitTypes[player][4].clone();
                     tempRand = rand.nextInt(3);
-                    tempUnit.color = COLORS[tempRand][1];
+                    tempUnit.color = Unit.COLORS[tempRand][1];
                 }
             }
-            if (tempUnit != null && placeUnit(player, tempUnit)) {
+            if (tempUnit != null && boards[player].addUnit(tempUnit)) {
                 playerPoints[player] -= tempUnit.cost;
             }
         }
         reinforcing = false;
     }
+
+    /*
 
     static boolean placeUnit(int player, Unit unit) {
         ArrayList<Integer> open = new ArrayList<Integer>();
@@ -287,7 +268,7 @@ class Main {
             if (reinforcing) {
                 return null;
             } else {
-                //becomeDefence(player, row - up, up + down, column);
+                // becomeDefence(player, row - up, up + down, column);
             }
             count++;
         }
@@ -326,45 +307,78 @@ class Main {
         }
     }
 
-    static void becomeDefence(int player, int topRow, int rows, int column) {
+    static void becomeDefence(int player, int topRow, int rows, int column) throws CloneNotSupportedException {
         for (int i = 0; i < rows; i++) {
             board[player][topRow + i][column] = BLANK_UNIT;
         }
         for (int i = 0; i < rows; i++) {
-            if (board[player][topRow + i][6].special != -1) {
+            int temp = -1;
+            for (int j = 6; j >= 0 && temp == -1; j--) {
+                if (board[player][topRow + i][j].special == -1) 
+                    temp = j;
+            }
+            if (temp == -1) {
                 shiftUnitsLeft(player, topRow + i, column, 1);
+                board[player][topRow + i][6] = (Unit) unitList.get(0).clone();
             } else {
-                // become tier 2 defence
+                board[player][topRow + i][temp] = (Unit) unitList.get(1).clone();
+                shiftUnitsRight(player, topRow + i, column);
             }
         }
     }
 
     static void shiftUnitsLeft(int player, int row, int column, int distance) {
-        shiftUnitLeft(player, row, column, distance);
+        for (int i = column + 1; i < 7 && board[player][row][i].special >= 0; i++) {
+            if (board[player][row][i].height == 1) {
+                shiftUnitLeft(player, row, i, distance);
+            } else
+                System.err.println("not implemented");
+        }
     }
 
     static void shiftUnitLeft(int player, int row, int column, int distance) {
         if (column - distance >= 0) {
             board[player][row][column - distance] = board[player][row][column];
         } else {
+            if (board[player][row][column].length != 1 || board[player][row][column].height != 1) {
+                System.err.println("not implemented");
+            }
             playerPoints[player] += board[player][row][column].cost;
         }
         board[player][row][column] = BLANK_UNIT;
-
     }
 
     static void shiftUnitsRight(int player, int row, int column) {
-        shiftUnitRight(player, row, column);
+        for (int i = column - 1; i >= 0 && board[player][row][i] != ; i--) {
+            if (board[player][row][i].height == 1) {
+                shiftUnitRight(player, row, i);
+            } else
+                System.err.println("not implemented");
+        }
     }
 
     static void shiftUnitRight(int player, int row, int column) {
-
+        boolean temp = true;
+        for (int i = column + 1; i < 7 && temp; i++) {
+            if (board[player][row][i] == BLANK_UNIT) {
+                board[player][row][i] = board[player][row][i - 1];
+                board[player][row][i - 1] = BLANK_UNIT;
+            } else {
+                temp = false;
+            }
+        }
     }
 
     static void removeUnit(int player, int row, int column) {
         if (board[player][row][column].height == 1) {
             if (board[player][row][column].length == 1) {
-            }
-        }
+                playerPoints[player] += board[player][row][column].cost;
+                board[player][row][column] = BLANK_UNIT;
+                shiftUnitsRight(player, row, column);
+            } else
+                System.err.println("not implemented");
+        } else
+            System.err.println("not implemented");
     }
+             */
 }

@@ -1,4 +1,17 @@
 class Unit implements Cloneable {
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+    public static final String[][] COLORS = new String[][] { { "red", ANSI_RED }, { "blue", ANSI_BLUE },
+            { "green", ANSI_GREEN } };
+    static final Unit BLANK_UNIT = new Unit();
+    
     String name;
     char icon;
     int health;
@@ -11,7 +24,7 @@ class Unit implements Cloneable {
     int special;
     String color = null;
     int max = -1;
-    int topRow = -1;
+    int[] topRight = new int[] {-1,-1};
 
     public Unit(String name, char icon, int health, int attack, int growth, int speed, int length, int height, int cost,
             int special) {
