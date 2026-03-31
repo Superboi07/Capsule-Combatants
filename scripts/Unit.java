@@ -1,4 +1,5 @@
 class Unit implements Cloneable {
+    public static final String ANSI_ITALICS = "\033[3m";
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -25,6 +26,7 @@ class Unit implements Cloneable {
     String color = null;
     int max = -1;
     int[] topRight = new int[] {-1,-1};
+    boolean isAttacking = false;
 
     public Unit(String name, char icon, int health, int attack, int growth, int speed, int length, int height, int cost,
             int special) {
@@ -60,7 +62,7 @@ class Unit implements Cloneable {
     }
 
     public boolean match(Unit unit) {
-        if (special == 0 && color == unit.color) {
+        if (special == 0 && color == unit.color && !unit.isAttacking) {
             return true;
         } else {
             return false;
