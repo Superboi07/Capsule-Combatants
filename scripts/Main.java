@@ -42,6 +42,12 @@ class Main {
         int temp2 = scan.nextInt();
         boards[0].removeUnit(temp1, temp2);
         printBoard();
+        
+        temp1 = scan.nextInt();
+        temp2 = scan.nextInt();
+        boards[0].removeUnit(temp1, temp2);
+        printBoard();
+
     }
 
     static void printBoard() {

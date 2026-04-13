@@ -242,13 +242,13 @@ public class Board {
         unit.health = unit.attack;
         unit.isAttacking = true;
         for (int y = 0; y < unit.height; y++) {
-            for (int i = 0; i < 2 + unit.length; i++) {
+            for (int i = 0; i < 2 + unit.length; i++) { // error from assuming that topRight is the right, instead of actually being top left
                 board[unit.topRight[0] + y][unit.topRight[1] - i] = Unit.BLANK_UNIT;
             }
         }
         int temp = 7 - unit.length;
         for (int i = unit.topRight[1] + 1; i < 7; i++) {
-            if (board[unit.topRight[0]][i].special < 0) {
+            if (board[unit.topRight[0]][i].special < 0) { // will displace other attacking units; beware of unintended interacitons
                 temp = i - 1;
             }
         }
@@ -271,7 +271,6 @@ public class Board {
         for (int y = 0; y < unit.height; y++) { // regression, sometimes
             shiftUnitsRight(unit.topRight[0] + y, unit.topRight[1] - (1 + unit.length));
         }
-        System.out.println(unit.length); // debug message for 2 long special unit enidng up 3 long
     }
 
     void becomeDefence(int row, int column) throws CloneNotSupportedException {
