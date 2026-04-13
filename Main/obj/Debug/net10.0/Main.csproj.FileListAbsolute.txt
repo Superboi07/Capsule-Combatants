@@ -1,0 +1,15 @@
+/workspaces/Capsule-Combatants/Main/bin/Debug/net10.0/Main
+/workspaces/Capsule-Combatants/Main/bin/Debug/net10.0/Main.deps.json
+/workspaces/Capsule-Combatants/Main/bin/Debug/net10.0/Main.runtimeconfig.json
+/workspaces/Capsule-Combatants/Main/bin/Debug/net10.0/Main.dll
+/workspaces/Capsule-Combatants/Main/bin/Debug/net10.0/Main.pdb
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.AssemblyInfoInputs.cache
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.AssemblyInfo.cs
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.csproj.CoreCompileInputs.cache
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.sourcelink.json
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.dll
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/refint/Main.dll
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.pdb
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/Main.genruntimeconfig.cache
+/workspaces/Capsule-Combatants/Main/obj/Debug/net10.0/ref/Main.dll
