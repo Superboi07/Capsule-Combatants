@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks.Dataflow;
 
 namespace Main
@@ -14,7 +15,7 @@ namespace Main
         static readonly int STARTING_ACTIONS = 3; // actions per turn
 
         static Board[] boards = [new(0, BOARD_WIDTH, BOARD_HEIGHT), new(1, BOARD_WIDTH, BOARD_HEIGHT)];
-        static int[] playerPoints = [STARTING_POINTS, STARTING_POINTS];
+        public static int[] playerPoints = [STARTING_POINTS, STARTING_POINTS];
         static int[] playerHealths = [STARTING_HEALTH, STARTING_HEALTH];
         static int[] playerActs = [STARTING_ACTIONS, STARTING_ACTIONS];
 
@@ -46,7 +47,13 @@ namespace Main
             string? input = "";
             if (gameState == 3) // main game loop; out of order bc it's the most likely
             {
-                boards[playerTurn].Print();
+                boards[0].Print();
+                Console.WriteLine("~~~~~~");
+                boards[1].Print();
+                Console.WriteLine("\nPlayer: " + (playerTurn + 1));
+                Console.WriteLine("Health: " + playerHealths[playerTurn]);
+                Console.WriteLine("Points: " + playerPoints[playerTurn]);
+                Console.WriteLine("Actions: " + playerActs[playerTurn] + "\n");
                 input = Console.ReadLine();
 
                 if (input == "clear") // debug only
@@ -72,8 +79,16 @@ namespace Main
                     if (int.TryParse(Console.ReadLine(), out y) && int.TryParse(Console.ReadLine(), out x))
                     {
                         int[] nums = boards[playerTurn].Remove(y, x);
-                        playerPoints[playerTurn] += nums[0];
-                        playerActs[playerTurn] += nums[1];
+                        if (nums[1] != -1)
+                        {
+                            playerPoints[playerTurn] += nums[0];
+                            playerActs[playerTurn] += nums[1];
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid input");
+                            playerActs[playerTurn]++;
+                        }
                     }
                     else
                     {
@@ -88,10 +103,21 @@ namespace Main
 
                     if (int.TryParse(Console.ReadLine(), out from) && int.TryParse(Console.ReadLine(), out to))
                     {
-                        playerActs[playerTurn] += boards[playerTurn].Move(from, to);
+                        int temp = boards[playerTurn].Move(from, to);
+                        if (temp != -1)
+                        {
+                            if (temp > 0) temp--;
+                            playerActs[playerTurn] += temp;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid input");
+                            playerActs[playerTurn]++;
+                        }
                     }
                     else
                     {
+                        Console.WriteLine("Invalid input");
                         playerActs[playerTurn]++;
                     }
                 }
@@ -109,7 +135,7 @@ namespace Main
 
                     if (playerTurn == 0)
                     {
-                        // playerTurn = 1;
+                        playerTurn = 1;
                     }
                     else if (playerTurn == 1)
                     {
@@ -117,7 +143,7 @@ namespace Main
                     }
                     else
                     {
-                        Console.WriteLine("paik; playerTurn not 0 nor 1");
+                        throw new SystemException("panik; playerTurn not 0 nor 1");
                     }
                 }
             }
@@ -133,6 +159,8 @@ namespace Main
             }
             else if (gameState == 2) // player 2 unit select
             {
+                boards[1].SetDemo();
+                playerPoints[1] = boards[1].Reinforce(playerPoints[1], true);
                 gameState = 3;
             }
             else if (gameState == 4) // end screen
@@ -141,9 +169,7 @@ namespace Main
             }
             else
             {
-                // PANIK
-                Console.WriteLine("gameState: " + gameState + " is invalid");
-                return;
+                throw new SystemException("gameState: " + gameState + " is invalid");
             }
 
             if (input == "exit")
@@ -162,7 +188,7 @@ namespace Main
 
         // ANSI codes, for use in debugging and pre-devcade demo
         public static readonly string ANSI_RESET = "\u001B[0m";
-        public static readonly string ANSI_ITALICS = "\033[3m";
+        public static readonly string ANSI_ITALICS = "\u001b[3m";
         public static readonly string[] ANSI_COLORS =
         [
             "\u001B[30m", "\u001B[31m", "\u001B[32m", "\u001B[34m"
@@ -183,14 +209,14 @@ namespace Main
                 new("demo basic strong", "", 'U', 3, 8, 6, 1, 1, 0, 0, 0)
             ],
             [
-                new("demo special 1 top", "", '∧', 7, 12, 10, 2, 4, 1, 0, 1),
-                new("demo special 1 bottom", "", '∨', 7, 12, 10, 2, 4, -1, 0, 1)
+                new("demo special 1 top", "", 'Ʌ', 7, 12, 10, 2, 4, 1, 0, 1),
+                new("demo special 1 bottom", "", 'V', 7, 12, 10, 2, 4, -1, 0, 1)
             ],
             [
-                new("demo special 2 top-left", "", '◢', 15, 18, 10, 3, 7, 1, 1, 1),
-                new("demo special 2 bottom-left", "", '◥', 15, 18, 10, 3, 7, -1, 1, 1),
-                new("demo special 2 top-right", "", '◣', 15, 18, 10, 3, 7, 1, -1, 1),
-                new("demo special 2 bottom-right", "", '◤', 15, 18, 10, 3, 7, -1, -1, 1)
+                new("demo special 2 top-left", "", '/', 15, 18, 10, 3, 7, 1, 1, 1),
+                new("demo special 2 bottom-left", "", '\\', 15, 18, 10, 3, 7, -1, 1, 1),
+                new("demo special 2 top-right", "", '\\', 15, 18, 10, 3, 7, 1, -1, 1),
+                new("demo special 2 bottom-right", "", '/', 15, 18, 10, 3, 7, -1, -1, 1)
             ]
         ]];
 
@@ -234,6 +260,7 @@ namespace Main
                 {
                     for (int x = 0; x < width; x++)
                     {
+                        if (board[y, x].attacking) Console.Write(ANSI_ITALICS);
                         Console.Write(ANSI_COLORS[board[y, x].colorCode] + board[y, x].symbol + ANSI_RESET);
                     }
                     Console.WriteLine();
@@ -241,7 +268,7 @@ namespace Main
             }
             else if (player == 1) // player 2's board is visually flipped
             {
-                for (int y = height - 1; y > -1; y++)
+                for (int y = height - 1; y > -1; y--)
                 {
                     for (int x = 0; x < width; x++)
                     {
@@ -269,9 +296,10 @@ namespace Main
             }
             else
             {
-                Console.WriteLine("SetDemo error");
+                throw new SystemException("SetDemo error");
             }
             special1Count[1] = 0;
+
             if (UNIT_LISTS[chosenTheme][chosenSpecials[1]].Length == 2)
             {
                 special2Count[0] = 2;
@@ -282,7 +310,7 @@ namespace Main
             }
             else
             {
-                Console.WriteLine("SetDemo error");
+                throw new SystemException("SetDemo error");
             }
             special2Count[1] = 0;
         }
@@ -399,8 +427,7 @@ namespace Main
                 }
                 if (tempRow != -1)
                 {
-                    int[] pain = CheckDefenseMatch(unit.color, tempRow, x);
-                    if (CheckAttackMatch(unit.color, tempRow, x) == 0 && pain[0] == 0 && pain[1] == 0)
+                    if (CheckAttackMatch(unit.color, tempRow, x) == 0 && CheckDefenseMatchLeft(unit.color, tempRow, x) + CheckDefenseMatchRight(unit.color, tempRow, x) < 2)
                     {
                         col.Add(x);
                         row.Add(tempRow);
@@ -452,68 +479,28 @@ namespace Main
             {
                 for (int x = 0; x <= unit.horz; x++)
                 {
-                    Console.WriteLine("s " + specialNum);
-                    Console.WriteLine("r " + row[numRand] + " " + y);
-                    Console.WriteLine("c " + col[numRand] + " " + x);
-                    board[row[numRand] + y, col[numRand] + x] = (Unit)UNIT_LISTS[chosenTheme][chosenSpecials[specialNum]][y + (x * 2)].Clone();
+                    board[row[numRand] + y, col[numRand] + x] = UNIT_LISTS[chosenTheme][chosenSpecials[specialNum]][y + (x * 2)].Clone();
                     board[row[numRand] + y, col[numRand] + x].color = color;
                     board[row[numRand] + y, col[numRand] + x].colorCode = colorCode + 1;
+                    board[row[numRand] + y, col[numRand] + x].matchAttackID = specialNum + 2;
+                    if (player == 1)
+                    {
+                    board[row[numRand] + y, col[numRand] + x].symbol = UNIT_LISTS[chosenTheme][chosenSpecials[specialNum]][1 - y + (x * 2)].symbol;
+                    }
                 }
             }
 
             return true;
         }
 
-        // checks if there's 3 in a row vertical
-        int CheckAttackMatch(string color, int y, int x)
-        {
-            if (y + 2 < height && board[y + 1, x].color == color && board[y + 1, x].special == 0 && !board[y + 1, x].attacking)
-            { // if theres enough room, the unit direcly below is a basic, the color matches, and isn't attacking
-                if (board[y + 2, x].color == color && !board[y + 1, x].attacking)
-                { // checks the color and attack of the unit 2 below
-                    if (board[y + 2, x].special == 0)
-                    { // if basic
-                        return 1;
-                    }
-                    else if (board[y, x + board[y, x].horz].special == 0 && board[y, x + board[y, x].horz].color == color && board[y + 1, x + board[y, x].horz].special == 0 && board[y + 1, x + board[y, x].horz].color == color)
-                    { // if the two units to the side are basic and match color; assumes specials less than 0 don't have color other than black, and that the units to the side can't attack
-                        return 2;
-                    }
-                }
-            }
-            return 0;
-        }
-
-        // checks if there's 3+ in a row horizontal
-        int[] CheckDefenseMatch(string color, int y, int x)
-        {
-            int left = 0;
-            int right = 0;
-
-            if (x > 0 && board[y, x - 1].special == 0 && board[y, x - 1].color == color && !board[y, x - 1].attacking)
-            {
-                left++;
-                if (x > 1 && board[y, x - 2].special == 0 && board[y, x - 2].color == color && !board[y, x - 2].attacking)
-                {
-                    left++;
-                }
-            }
-
-            if (x < width - 1 && board[y, x + 1].special == 0 && board[y, x + 1].color == color && !board[y, x + 1].attacking)
-            {
-                right++;
-                if (x < width - 2 && board[y, x + 2].special == 0 && board[y, x + 2].color == color && !board[y, x + 2].attacking)
-                {
-                    right++;
-                }
-            }
-
-            return [left, right];
-        }
-
         // removes unit at spot
         public int[] Remove(int y, int x)
         {
+            if (y >= height || y < 0 || x >= width || x < 0 || board[y, x] == BLANK_UNIT || board[y, x].attacking)
+            { // can't remove blank unit or attacking units
+                return [-1, -1];
+            }
+
             int[] nums = [board[y, x].cost, 0];
             int horz = board[y, x].horz;
             int vert = board[y, x].vert;
@@ -537,14 +524,7 @@ namespace Main
             board[y, x] = BLANK_UNIT;
             Down(y + vert - 1, x);
 
-            if (horz == 0)
-            {
-                nums[1] = CheckRow(x);
-            }
-            else
-            {
-                // pain
-            }
+            nums[1] = CheckBoard();
 
             return nums;
         }
@@ -552,8 +532,101 @@ namespace Main
         // moves top unit from col to col
         public int Move(int from, int to)
         {
-            int acts = 0;
-            return acts;
+            if (from >= width || from < 0 || to >= width || to < 0)
+            {
+                return -1;
+            }
+            int fromY = -1;
+            int toY = height - 1;
+            for (int i = 0; i < height && fromY == -1; i++)
+            { // finds the top from unit
+                if (board[i, from] != BLANK_UNIT)
+                {
+                    if (board[i, from].attacking || board[i, from].special < 0)
+                    {
+                        return -1;
+                    }
+                    fromY = i;
+                }
+            }
+            for (int i = 0; i < height && toY == height - 1; i++)
+            { // finds the to space
+                if (board[i, to] != BLANK_UNIT)
+                {
+                    toY = i - 1;
+                }
+            }
+            if (fromY == -1 || toY == -1)
+            {
+                return -1;
+            }
+
+            if (board[fromY, from].vert == 0)
+            {
+                board[toY, to] = board[fromY, from];
+                board[fromY, from] = BLANK_UNIT;
+                return CheckBoard(); // pain
+            }
+            else
+            {
+                if (toY == 0)
+                {
+                    return -1;
+                }
+
+                if (board[fromY, from].horz == 0)
+                {
+                    board[toY - 1, to] = board[fromY, from];
+                    board[toY, to] = board[fromY + 1, from];
+                    board[fromY, from] = BLANK_UNIT;
+                    board[fromY + 1, from] = BLANK_UNIT;
+                }
+                else
+                {
+                    if (to == 0) return -1;
+                    if (fromY != 0 && board[fromY - 1, from + board[fromY, from].horz] != BLANK_UNIT)
+                    {
+                        return -1;
+                    }
+
+                    Unit temp1 = board[fromY, from]; // insures no overlap issues
+                    Unit temp2 = board[fromY, from - 1];
+                    Unit temp3 = board[fromY + 1, from];
+                    Unit temp4 = board[fromY + 1, from - 1];
+
+                    board[fromY, from] = BLANK_UNIT;
+                    board[fromY, from - 1] = BLANK_UNIT;
+                    board[fromY + 1, from] = BLANK_UNIT;
+                    board[fromY + 1, from - 1] = BLANK_UNIT;
+
+                    int toY2 = height - 1;
+                    for (int i = 0; i < height && toY2 == height - 1; i++)
+                    { // finds the to2 space
+                        if (board[i, to - 1] != BLANK_UNIT)
+                        {
+                            toY2 = i - 1;
+                        }
+                    }
+                    if (toY2 < 1)
+                    {
+                        board[fromY, from] = temp1;
+                        board[fromY, from - 1] = temp2;
+                        board[fromY + 1, from] = temp3;
+                        board[fromY + 1, from - 1] = temp4;
+                        return -1;
+                    }
+
+                    toY = Math.Min(toY, toY2);
+                    if (board[fromY, from].horz == 1) from--; // from should be on the right side
+
+                    board[toY - 1, to] = temp1;
+                    board[toY - 1, to - 1] = temp2;
+                    board[toY, to] = temp3;
+                    board[toY, to - 1] = temp4;
+                }
+                return 0;
+            }
+
         }
 
         // shifts units down; assumes position has blank below
@@ -564,7 +637,7 @@ namespace Main
             int pos = height - 1;
             for (int i = y + 2; i < height && pos == height - 1; i++)
             {
-                if (board[y, x] != BLANK_UNIT)
+                if (board[i, x] != BLANK_UNIT)
                 {
                     pos = i - 1;
                 }
@@ -575,45 +648,469 @@ namespace Main
             if (horz != 0)
             {
                 int pos2 = height - 1;
-                for (int i = y; i < height && pos2 == height - 1; i++)
+                for (int i = y + 1; i < height && pos2 == height - 1; i++)
                 {
-                    if (board[y, x + horz] != BLANK_UNIT)
+                    if (board[i, x + horz] != BLANK_UNIT)
                     {
                         pos2 = i - 1;
                     }
                 }
+
                 if (pos2 == y) return;
                 pos = Math.Min(pos, pos2);
+
                 board[pos, x] = board[y, x];
-                board[pos + 1, x] = board[y + 1, x];
                 board[pos, x + horz] = board[y, x + horz];
-                board[pos + 1, x + horz] = board[y + 1, x + horz];
-                board[y, x] = BLANK_UNIT;
-                board[y + 1, x] = BLANK_UNIT;
-                board[y, x + horz] = BLANK_UNIT;
-                board[y + 1, x + horz] = BLANK_UNIT;
+                board[pos - 1, x] = board[y - 1, x];
+                board[pos - 1, x + horz] = board[y - 1, x + horz];
+
+                if (pos != y + 1)
+                {
+                    board[y, x] = BLANK_UNIT;
+                    board[y, x + horz] = BLANK_UNIT;
+                }
+                board[y - 1, x] = BLANK_UNIT;
+                board[y - 1, x + horz] = BLANK_UNIT;
+
                 Down(y - 2, x + horz);
             }
             else
             {
                 board[pos, x] = board[y, x];
-                if (vert == 1)
+                if (vert == -1)
                 {
-                    board[pos + 1, x] = board[y + 1, x];
-                    board[y + 1, x] = BLANK_UNIT;
+                    board[pos - 1, x] = board[y - 1, x];
+                    board[y - 1, x] = BLANK_UNIT;
+                    if (y + 1 != pos)
+                    {
+                        board[y, x] = BLANK_UNIT;
+                    }
                 }
-                board[y, x] = BLANK_UNIT;
+                else
+                {
+                    board[y, x] = BLANK_UNIT;
+                }
             }
-            Down(y - (1 + vert), x);
+            Down(y + vert - 1, x);
         }
 
         void Up(int y, int x, int dist)
         {
+            if (y - dist < 0)
+            {
+                Program.playerPoints[player] += board[y, x].cost;
+                board[y, x] = BLANK_UNIT;
+            }
+            else if (board[y, x] == BLANK_UNIT)
+            {
+                return;
+            }
+            else
+            {
+                Up(y - 1, x, 1);
+                board[y - 1, x] = board[y, x];
+            }
+
+            if (dist != 1) Up(y - 1, x, dist - 1);
         }
 
-        int CheckRow(int x)
+        // will initizate match; I didn't want to check the entire board every time, but I gave up
+        int CheckBoard()
         {
+            int matches = 0;
+
+            for (int y = 0; y < height; y++)
+            { // check each spot
+                for (int x = 0; x < width; x++)
+                {
+                    if (board[y, x] != BLANK_UNIT && board[y, x].special == 0)
+                    {
+                        matches += CheckSpot(y, x);
+                    }
+                }
+            }
+
+            if (matches != 0)
+            {
+                // def to add
+                int[] colDefStates = [0, 0, 0, 0, 0, 0];
+                // colorCode, matchAttackID
+                // 0 = none, 1 = basic, 2 = special 1, 3 = special 2, 4 = two at once (not implemented)
+                int[][] colAtkStates = [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]];
+
+                for (int y = 0; y < height; y++)
+                { // remove all matched units and apply correct states
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (board[y, x].matchDefend)
+                        {
+                            colDefStates[x]++;
+                            if (board[y, x].matchAttack == 1)
+                            {
+                                if (colAtkStates[x][1] != 0)
+                                {
+                                    throw new SystemException("Multible attacks initating simultaneously in the same column not supported. If you are reading this during an actual game, player: " + player + " wins for acheving the impossible.");
+                                }
+                                else
+                                {
+                                    colAtkStates[x][0] = board[y, x].colorCode;
+                                    colAtkStates[x][1] = 1;
+                                    board[y + 1, x] = BLANK_UNIT;
+                                    board[y + 2, x] = BLANK_UNIT;
+                                }
+                            }
+                            else if (board[y, x].matchAttack == 2)
+                            {
+                                if (colAtkStates[x][1] != 0)
+                                {
+                                    throw new SystemException("Multible attacks initating simultaneously in the same column not supported. If you are reading this during an actual game, player: " + player + " wins for acheving the impossible.");
+                                }
+                                else
+                                {
+                                    colAtkStates[x][0] = board[y, x].colorCode;
+                                    colAtkStates[x][1] = board[y + 2, x].matchAttackID;
+                                    if (board[y + 2, x].horz != 0)
+                                    {
+                                        board[y, x + 1] = BLANK_UNIT;
+                                        board[y + 1, x + 1] = BLANK_UNIT;
+                                        board[y + 2, x + 1] = BLANK_UNIT;
+                                        board[y + 3, x + 1] = BLANK_UNIT;
+                                    }
+                                    board[y + 1, x] = BLANK_UNIT;
+                                    board[y + 2, x] = BLANK_UNIT;
+                                    board[y + 3, x] = BLANK_UNIT;
+                                }
+                            }
+                            board[y, x] = BLANK_UNIT;
+                        }
+                        else
+                        {
+                            if (board[y, x].matchAttack == 1)
+                            {
+                                if (colAtkStates[x][1] != 0)
+                                {
+                                    throw new SystemException("Multible attacks initating simultaneously in the same column not supported. If you are reading this during an actual game, player: " + player + " wins for acheving the impossible.");
+                                }
+                                else
+                                {
+                                    colAtkStates[x][0] = board[y, x].colorCode;
+                                    colAtkStates[x][1] = 1;
+                                    board[y, x] = BLANK_UNIT;
+                                    board[y + 1, x] = BLANK_UNIT;
+                                    board[y + 2, x] = BLANK_UNIT;
+                                }
+                            }
+                            else if (board[y, x].matchAttack == 2)
+                            {
+                                if (colAtkStates[x][1] != 0)
+                                {
+                                    throw new SystemException("Multible attacks initating simultaneously in the same column not supported. If you are reading this during an actual game, player: " + player + " wins for acheving the impossible.");
+                                }
+                                else
+                                {
+                                    colAtkStates[x][0] = board[y, x].colorCode;
+                                    colAtkStates[x][1] = board[y + 2, x].matchAttackID;
+                                    if (board[y + 2, x].horz != 0)
+                                    {
+                                        board[y, x + 1] = BLANK_UNIT;
+                                        board[y + 1, x + 1] = BLANK_UNIT;
+                                        board[y + 2, x + 1] = BLANK_UNIT;
+                                        board[y + 3, x + 1] = BLANK_UNIT;
+                                    }
+                                    board[y, x] = BLANK_UNIT;
+                                    board[y + 1, x] = BLANK_UNIT;
+                                    board[y + 2, x] = BLANK_UNIT;
+                                    board[y + 3, x] = BLANK_UNIT;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (int x = 0; x < width; x++)
+                {
+                    if (colDefStates[x] != 0 || colAtkStates[x][1] != 0)
+                    {
+                        for (int y = height - 1; y > 0; y--)
+                        {
+                            if (board[y, x] == BLANK_UNIT)
+                            {
+                                Down(y - 1, x);
+                            }
+                        }
+                    }
+                }
+
+                for (int x = 0; x < width; x++)
+                {
+                    AddDefence(x, colDefStates[x]);
+                }
+                for (int x = 0; x < width; x++)
+                {
+                    AddAttack(x, colAtkStates[x]);
+                }
+
+                // do it all again
+                matches += CheckBoard();
+            }
+            return matches;
+        }
+
+        // assumes unit at spot
+        int CheckSpot(int y, int x)
+        {
+            int matches = 0;
+            string color = board[y, x].color;
+            int defPos = 0;
+            int attackState = 0;
+            if (!board[y, x].matchDefend)
+            {
+                defPos = CheckDefenseMatchRight(color, y, x);
+            }
+            if (board[y, x].matchAttack == 0)
+            {
+                attackState = CheckAttackMatch(color, y, x);
+            }
+
+            if (defPos > 1)
+            {
+                matches++;
+                for (int i = 0; i <= defPos; i++)
+                {
+                    board[y, x + i].matchDefend = true;
+                }
+            }
+
+            if (attackState == 1)
+            {
+                matches++;
+                board[y, x].matchAttack = 1;
+                board[y + 1, x].matchAttack = 1;
+                board[y + 2, x].matchAttack = 1;
+            }
+            else if (attackState == 2)
+            {
+                matches++;
+                board[y, x].matchAttack = 2;
+                board[y + 1, x].matchAttack = 2;
+                board[y + 2, x].matchAttack = 2;
+                board[y + 2, x].matchAttack = 2;
+                board[y, x + board[y + 2, x].horz].matchAttack = 2;
+                board[y + 1, x + board[y + 2, x].horz].matchAttack = 2;
+                board[y + 2, x + board[y + 2, x].horz].matchAttack = 2;
+                board[y + 2, x + board[y + 2, x].horz].matchAttack = 2;
+            }
+
+            return matches;
+        }
+
+        // checks if there's 3 in a row vertical; shouldn't assume unit at spot
+        int CheckAttackMatch(string color, int y, int x)
+        {
+            if (y + 2 < height && board[y + 1, x].color == color && board[y + 1, x].special == 0 && !board[y + 1, x].attacking)
+            { // if theres enough room, the unit direcly below is a basic, the color matches, and isn't attacking
+                if (board[y + 2, x].color == color && !board[y + 2, x].attacking)
+                { // checks the color and attack of the unit 2 below
+                    if (board[y + 2, x].special == 0)
+                    { // if basic
+                        return 1;
+                    }
+                    else if (board[y + 2, x].horz == 0 || (board[y, x + board[y + 2, x].horz].special == 0 && board[y, x + board[y + 2, x].horz].color == color && board[y + 1, x + board[y + 2, x].horz].special == 0 && board[y + 1, x + board[y + 2, x].horz].color == color))
+                    { // if the two units to the side are basic and match color; assumes specials less than 0 don't have color other than black, and that the units to the side can't attack
+                        return 2;
+                    }
+                }
+            }
             return 0;
+        }
+
+        // checks if there's 3+ in a row horizontal; shouldn't assume unit at spot
+        int CheckDefenseMatchLeft(string color, int y, int x)
+        {
+            int left = 0;
+
+            if (x > 0 && board[y, x - 1].special == 0 && board[y, x - 1].color == color && !board[y, x - 1].attacking)
+            {
+                left++;
+                if (x > 1 && board[y, x - 2].special == 0 && board[y, x - 2].color == color && !board[y, x - 2].attacking)
+                {
+                    left++;
+                }
+            }
+
+            return left;
+        }
+        int CheckDefenseMatchRight(string color, int y, int x)
+        {
+            int right = 0;
+
+            for (int i = width - 1; i > -1; i--)
+            {
+                if (x < i && board[y, x + (width - i)].special == 0 && board[y, x + (width - i)].color == color && !board[y, x + (width - i)].attacking)
+                {
+                    right++;
+                }
+                else
+                {
+                    i = -1;
+                }
+            }
+
+            return right;
+        }
+
+        void AddDefence(int x, int num)
+        {
+            if (num == 0) return;
+
+            int pos = height - 1;
+            for (int y = height - 1; y > 0; y--)
+            {
+                if (board[y, x].special == -2)
+                {
+                    pos = y - 1;
+                }
+                else
+                {
+                    if (board[y, x].special == -1)
+                    {
+                        num--;
+                        board[y, x] = UNIT_LISTS[chosenTheme][0][1].Clone();
+                    }
+                    y = 0;
+                }
+            }
+
+            while (num > 0)
+            {
+                Up(pos, x, 1);
+                if (num > 1)
+                {
+                    num -= 2;
+                    board[pos, x] = UNIT_LISTS[chosenTheme][0][1].Clone();
+                    pos--;
+                }
+                else
+                {
+                    num--;
+                    board[pos, x] = UNIT_LISTS[chosenTheme][0][0].Clone();
+                }
+            }
+        }
+
+        void AddAttack(int x, int[] nums)
+        {
+            if (nums[1] == 0) return;
+
+            string temp = "";
+            if (nums[0] == 1)
+            {
+                temp = "red";
+            }
+            else if (nums[0] == 2)
+            {
+                temp = "green";
+            }
+            else if (nums[0] == 3)
+            {
+                temp = "blue";
+            }
+
+            int pos = height - 1;
+            for (int y = height - 1; y > 0; y--)
+            {
+                if (board[y, x].special < 0)
+                {
+                    pos = y - 1;
+                }
+                else
+                {
+                    y = 0;
+                }
+            }
+
+            if (nums[1] == 1)
+            {
+                if (board[pos, x].attacking && board[pos, x].colorCode == nums[0])
+                {
+                    Console.WriteLine("COMBO!");
+                    board[pos, x].attack += UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].attack * 2 / 3;
+                    board[pos - 1, x].attack += UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].attack * 2 / 3;
+                    board[pos - 2, x].attack += UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].attack * 2 / 3;
+                }
+                else
+                {
+                    Up(pos, x, 3);
+                    board[pos, x] = UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].Clone();
+                    board[pos, x].color = temp;
+                    board[pos, x].colorCode = nums[0];
+                    board[pos, x].attacking = true;
+                    board[pos - 1, x] = UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].Clone();
+                    board[pos - 1, x].color = temp;
+                    board[pos - 1, x].colorCode = nums[0];
+                    board[pos - 1, x].attacking = true;
+                    board[pos - 2, x] = UNIT_LISTS[chosenTheme][1][chosenBasicFormes[nums[0] - 1]].Clone();
+                    board[pos - 2, x].color = temp;
+                    board[pos - 2, x].colorCode = nums[0];
+                    board[pos - 2, x].attacking = true;
+                }
+            }
+            else
+            {
+                nums[1] -= 2;
+                if (UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][0].horz == 0)
+                {
+                    Up(pos, x, 2);
+                    board[pos, x] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][1].Clone();
+                    board[pos, x].color = temp;
+                    board[pos, x].colorCode = nums[0];
+                    board[pos, x].attacking = true;
+                    board[pos, x].cost += 2;
+                    board[pos - 1, x] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][0].Clone();
+                    board[pos - 1, x].color = temp;
+                    board[pos - 1, x].colorCode = nums[0];
+                    board[pos - 1, x].attacking = true;
+                    board[pos - 1, x].cost += 2;
+                }
+                else
+                {
+                    int pos2 = height - 1;
+                    for (int y = height - 1; y > 0; y--)
+                    {
+                        if (board[y, x + 1].special < 0)
+                        {
+                            pos2 = y - 1;
+                        }
+                        else
+                        {
+                            y = 0;
+                        }
+                    }
+                    int pos3 = Math.Min(pos, pos2);
+                    Up(pos, x, 2 + Math.Abs(pos - pos3));
+                    Up(pos2, x + 1, 2 + Math.Abs(pos2 - pos3));
+                    board[pos3, x] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][1].Clone();
+                    board[pos3, x].color = temp;
+                    board[pos3, x].colorCode = nums[0];
+                    board[pos3, x].attacking = true;
+                    board[pos3, x].cost += 4;
+                    board[pos3 - 1, x] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][0].Clone();
+                    board[pos3 - 1, x].color = temp;
+                    board[pos3 - 1, x].colorCode = nums[0];
+                    board[pos3 - 1, x].attacking = true;
+                    board[pos3 - 1, x].cost += 4;
+                    board[pos3, x + 1] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][3].Clone();
+                    board[pos3, x + 1].color = temp;
+                    board[pos3, x + 1].colorCode = nums[0];
+                    board[pos3, x + 1].attacking = true;
+                    board[pos3, x + 1].cost += 4;
+                    board[pos3 - 1, x + 1] = UNIT_LISTS[chosenTheme][chosenSpecials[nums[1]]][2].Clone();
+                    board[pos3 - 1, x + 1].color = temp;
+                    board[pos3 - 1, x + 1].colorCode = nums[0];
+                    board[pos3 - 1, x + 1].attacking = true;
+                    board[pos3 - 1, x + 1].cost += 4;
+                }
+            }
         }
     }
 
@@ -623,8 +1120,9 @@ namespace Main
         public string name, color;
         public int colorCode; // debug & pre-devcade demo use only
         public char symbol; // debug & pre-devcade demo use only
-        /* public [] sprite; */
-        public bool attacking;
+        /* public __ sprite; */
+        public bool attacking, matchDefend;
+        public int matchAttack, matchAttackID;
         public int health, attack, growth, speed, cost;
         public int vert, horz; // for use in speical unit sizes
         public int special;
@@ -633,7 +1131,7 @@ namespace Main
         // 0 = basic unit & blank
         // 1+ = special unit
         // 1 = special unit without bonus effect 
-        // 2 = double health
+        // 2 = double attacking health
         // 3 = blast
         public Unit(string name, string color, char symbol, int health, int attack, int growth, int speed, int cost, int vert, int horz, int special)
         {
@@ -650,6 +1148,9 @@ namespace Main
             this.horz = horz;
             this.special = special;
             attacking = false;
+            matchDefend = false;
+            matchAttack = 0;
+            matchAttackID = 0;
         }
 
         public Unit Clone()
