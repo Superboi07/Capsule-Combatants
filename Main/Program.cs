@@ -12,12 +12,13 @@ namespace Main
 
         static readonly int STARTING_POINTS = 35; // units cost points
         static readonly int STARTING_HEALTH = 100;
-        static readonly int STARTING_ACTIONS = 3; // actions per turn
+        static readonly int STARTING_ACTIONS = 4; // actions per turn
+        static readonly int PLAYER_1_BALANCE = 2; // how many less actions player 2 starts with
 
         static Board[] boards = [new(0, BOARD_WIDTH, BOARD_HEIGHT), new(1, BOARD_WIDTH, BOARD_HEIGHT)];
         public static int[] playerPoints = [STARTING_POINTS, STARTING_POINTS];
         static int[] playerHealths = [STARTING_HEALTH, STARTING_HEALTH];
-        static int[] playerActs = [STARTING_ACTIONS, STARTING_ACTIONS];
+        static int[] playerActs = [STARTING_ACTIONS - PLAYER_1_BALANCE, STARTING_ACTIONS];
 
         static int gameState = 0; // 0 = main menu, 1 = player 1 unit select, 2 = player 2 unit select, 3 = game, 4 = end screen
         static int playerTurn = 0; // 0 = player 1, 1 = player 2
@@ -66,6 +67,7 @@ namespace Main
                     boards[playerTurn].Clear();
                     playerPoints[playerTurn] = STARTING_POINTS;
                     playerPoints[playerTurn] = boards[playerTurn].Reinforce(playerPoints[playerTurn], true);
+                    playerActs[playerTurn] += 10;
                 }
                 else if (input == "reinforce")
                 {
@@ -121,6 +123,10 @@ namespace Main
                         playerActs[playerTurn]++;
                     }
                 }
+                else if (input == "pass")
+                {
+                    playerActs[playerTurn] = 1;
+                }
                 else
                 {
                     Console.WriteLine("Invalid input");
@@ -135,11 +141,34 @@ namespace Main
 
                     if (playerTurn == 0)
                     {
-                        playerTurn = 1;
+                        int[] temp = boards[0].TurnEnd(boards[1].TurnStart());
+                        playerHealths[0] -= temp[0];
+                        if (playerHealths[0] <= 0)
+                        {
+                            Console.WriteLine("Player 1 wins!");
+                            gameState = 4;
+                        }
+                        else
+                        {
+                            playerPoints[0] += temp[1];
+                            playerTurn = 1;
+                        }
+
                     }
                     else if (playerTurn == 1)
                     {
-                        playerTurn = 0;
+                        int[] temp = boards[1].TurnEnd(boards[0].TurnStart());
+                        playerHealths[1] -= temp[0];
+                        if (playerHealths[1] <= 0)
+                        {
+                            Console.WriteLine("Player 2 wins!");
+                            gameState = 4;
+                        }
+                        else
+                        {
+                            playerPoints[1] += temp[1];
+                            playerTurn = 0;
+                        }
                     }
                     else
                     {
@@ -177,7 +206,6 @@ namespace Main
                 return;
             }
             Update();
-
         }
     }
 
@@ -199,14 +227,14 @@ namespace Main
 
         // first dimention is theme, second dimention is unit varity, third dimention is forme
         public static readonly Unit[][][] UNIT_LISTS =
-        [[
+        [[ // string name, string color, char symbol, int health, int attack, int growth, int speed, int cost, int vert, int horz, int special
             [
                 new("demo defense 1", "black", 'x', 4, 0, 0, 0, 1, 0, 0, -1),
                 new("demo defense 2", "black", 'X', 9, 0, 0, 0, 2, 0, 0, -2)
             ],
             [
-                new("demo basic weak", "", 'u', 2, 5, 5, 1, 1, 0, 0, 0),
-                new("demo basic strong", "", 'U', 3, 8, 6, 1, 1, 0, 0, 0)
+                new("demo basic weak", "", 'u', 2, 4, 6, 1, 1, 0, 0, 0),
+                new("demo basic strong", "", 'U', 3, 6, 6, 1, 2, 0, 0, 0)
             ],
             [
                 new("demo special 1 top", "", 'Ʌ', 7, 12, 10, 2, 4, 1, 0, 1),
@@ -285,7 +313,7 @@ namespace Main
         {
             chosenTheme = 0;
             chosenBasicFormes = [0, 1, 0];
-            chosenSpecials = [2, 3];
+            chosenSpecials = [2, 3]; // 2 1x2 allowed, 2 2x2 not allowed; multible systems assume only 1 2 wide unit
             if (UNIT_LISTS[chosenTheme][chosenSpecials[0]].Length == 2)
             {
                 special1Count[0] = 2;
@@ -485,7 +513,7 @@ namespace Main
                     board[row[numRand] + y, col[numRand] + x].matchAttackID = specialNum + 2;
                     if (player == 1)
                     {
-                    board[row[numRand] + y, col[numRand] + x].symbol = UNIT_LISTS[chosenTheme][chosenSpecials[specialNum]][1 - y + (x * 2)].symbol;
+                        board[row[numRand] + y, col[numRand] + x].symbol = UNIT_LISTS[chosenTheme][chosenSpecials[specialNum]][1 - y + (x * 2)].symbol;
                     }
                 }
             }
@@ -698,7 +726,20 @@ namespace Main
         {
             if (y - dist < 0)
             {
+                if (board[y, x].attacking)
+                {
+                    throw new Exception("an attacking unit shouldn't be able to exit from top.");
+                }
                 Program.playerPoints[player] += board[y, x].cost;
+                if (board[y, x].vert != 0)
+                {
+                    board[y + 1, x] = BLANK_UNIT;
+                    if (board[y, x].horz != 0)
+                    {
+                        board[y, x + board[y, x].horz] = BLANK_UNIT;
+                        board[y + 1, x + board[y, x].horz] = BLANK_UNIT;
+                    }
+                }
                 board[y, x] = BLANK_UNIT;
             }
             else if (board[y, x] == BLANK_UNIT)
@@ -707,8 +748,21 @@ namespace Main
             }
             else
             {
-                Up(y - 1, x, 1);
-                board[y - 1, x] = board[y, x];
+                if (board[y, x].horz != 0)
+                {
+                    Up(y - 2, x, 1);
+                    Up(y - 2, x + board[y, x].horz, 1);
+                    board[y - 2, x + board[y, x].horz] = board[y - 1, x + board[y, x].horz];
+                    board[y - 1, x + board[y, x].horz] = board[y, x + board[y, x].horz];
+                    board[y - 2, x] = board[y - 1, x];
+                    board[y - 1, x] = board[y, x];
+                    board[y, x + board[y, x].horz] = BLANK_UNIT;
+                }
+                else
+                {
+                    Up(y - 1, x, 1);
+                    board[y - 1, x] = board[y, x];
+                }
             }
 
             if (dist != 1) Up(y - 1, x, dist - 1);
@@ -1112,6 +1166,907 @@ namespace Main
                 }
             }
         }
+
+        public DataPacket TurnStart()
+        {
+            DataPacket data = new();
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = height - 1; y > -1; y--)
+                {
+                    // if (has special that triggers every turn)
+                    if (board[y, x].attacking)
+                    {
+                        if (board[y, x].special == 0)
+                        {
+                            board[y, x].attack += board[y, x].growth;
+                            board[y - 1, x].attack += board[y - 1, x].growth;
+                            board[y - 2, x].attack += board[y - 2, x].growth;
+                            board[y, x].speed--;
+                            board[y - 1, x].speed--;
+                            board[y - 2, x].speed--;
+
+                            if (board[y, x].speed == 0)
+                            {
+                                data.attacks.Add([x, board[y, x].attack, 0]);
+                                board[y, x] = BLANK_UNIT;
+                                board[y - 1, x] = BLANK_UNIT;
+                                board[y - 2, x] = BLANK_UNIT;
+                                if (y - 3 > 0) Down(y - 3, x);
+                                y++;
+                            }
+                            else
+                            {
+                                y -= 3;
+                            }
+                        }
+                        else if (board[y, x].special == 1)
+                        {
+                            if (board[y, x].horz == 0)
+                            {
+                                board[y, x].attack += board[y, x].growth;
+                                board[y - 1, x].attack += board[y - 1, x].growth;
+                                board[y, x].speed--;
+                                board[y - 1, x].speed--;
+
+                                if (board[y, x].speed == 0)
+                                {
+                                    data.attacks.Add([x, board[y, x].attack, 0]);
+                                    board[y, x] = BLANK_UNIT;
+                                    board[y - 1, x] = BLANK_UNIT;
+                                    if (y - 2 > 0) Down(y - 2, x);
+                                    y++;
+                                }
+                                else
+                                {
+                                    y -= 2;
+                                }
+                            }
+                            else
+                            {
+                                board[y, x].attack += board[y, x].growth;
+                                board[y - 1, x].attack += board[y - 1, x].growth;
+                                board[y, x + 1].attack += board[y, x].growth;
+                                board[y - 1, x + 1].attack += board[y - 1, x].growth;
+                                board[y, x].speed--;
+                                board[y - 1, x].speed--;
+                                board[y, x + 1].speed--;
+                                board[y - 1, x + 1].speed--;
+
+                                if (board[y, x].speed == 0)
+                                {
+                                    data.attacks.Add([x, board[y, x].attack, 1]);
+                                    board[y, x] = BLANK_UNIT;
+                                    board[y - 1, x] = BLANK_UNIT;
+                                    board[y, x + 1] = BLANK_UNIT;
+                                    board[y - 1, x + 1] = BLANK_UNIT;
+                                    if (y - 2 > 0)
+                                    {
+                                        Down(y - 2, x);
+                                        Down(y - 2, x + 1);
+                                    }
+                                    y++;
+                                }
+                                else
+                                {
+                                    y -= 2;
+                                }
+                            }
+                        }
+                    }
+                    else if (board[y, x].special >= 0)
+                    {
+                        y = -1;
+                    }
+                }
+            }
+            return data;
+        }
+
+        // !IMPORTANT! 
+        // can be optimzed, repeats the same lines of code a ton of times
+        // i'm too tired rn, and wanna move on to Project: Citrus
+        // !IMPORTANT!
+        public int[] TurnEnd(DataPacket data)
+        { // i'm so sorry
+            int[] damCost = [0, 0];
+            foreach (int[] attack in data.attacks)
+            {
+                if (attack[2] == 0)
+                {
+                    for (int y = height - 1; y > -1; y--)
+                    {
+                        if (!board[y, attack[0]].attacking)
+                        {
+                            if (board[y, attack[0]].special < 1)
+                            {
+                                damCost[1] += board[y, attack[0]].cost;
+                                if (board[y, attack[0]].health >= attack[1])
+                                {
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    if (y > 0)
+                                    {
+                                        Down(y - 1, attack[0]);
+                                    }
+                                    y = -1;
+                                }
+                                else
+                                {
+                                    attack[1] -= board[y, attack[0]].health;
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    if (y == 0)
+                                    {
+                                        damCost[0] += attack[1];
+                                    }
+                                }
+                            }
+                            else if (board[y, attack[0]].special != 27)
+                            { // if special not do anything weird with being attacked while not attacking
+                                damCost[1] += board[y, attack[0]].cost;
+                                if (board[y, attack[0]].health >= attack[1])
+                                {
+                                    if (board[y, attack[0]].horz == 0)
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        int horz = board[y,attack[0]].horz;
+                                        board[y, attack[0] + horz] = BLANK_UNIT;
+                                        board[y - 1, attack[0] + horz] = BLANK_UNIT;
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                            Down(y - 2, attack[0] + horz);
+                                        }
+                                    }
+                                    y = -1;
+                                }
+                                else
+                                {
+                                    attack[1] -= board[y, attack[0]].health;
+                                    if (board[y, attack[0]].horz == 0)
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                    }
+                                    else
+                                    {
+                                        int horz = board[y,attack[0]].horz;
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                        board[y, attack[0] + horz] = BLANK_UNIT;
+                                        board[y - 1, attack[0] + horz] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0] + horz); // asumes no other wide unit
+                                        }
+                                    }
+
+                                    if (y == 1)
+                                    {
+                                        damCost[0] += attack[1];
+                                    }
+                                }
+                            }
+                        }
+                        else if (board[y, attack[0]].special != 2)
+                        { // if special not do anything weird when attacked while attacking
+                            if (board[y, attack[0]].attack > attack[1])
+                            {
+                                board[y, attack[0]].attack -= attack[1];
+                                board[y - 1, attack[0]].attack -= attack[1];
+                                if (board[y, attack[0]].special == 0)
+                                {
+                                    board[y - 2, attack[0]].attack -= attack[1];
+                                }
+                                else if (board[y, attack[0]].horz != 0)
+                                {
+                                    board[y, attack[0] + board[y, attack[0]].horz].attack -= attack[1];
+                                    board[y - 1, attack[0] + board[y, attack[0]].horz].attack -= attack[1];
+                                }
+                                y = -1;
+                            }
+                            else
+                            {
+                                attack[1] -= board[y, attack[0]].attack;
+
+                                if (board[y, attack[0]].special == 0)
+                                {
+                                    damCost[1] += 3;
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    board[y - 1, attack[0]] = BLANK_UNIT;
+                                    board[y - 2, attack[0]] = BLANK_UNIT;
+                                    if (attack[1] != 0)
+                                    {
+                                        if (y > 2)
+                                        {
+                                            Down(y - 3, attack[0]);
+                                        }
+                                        else if (y == 2)
+                                        {
+                                            damCost[0] += attack[1];
+                                            y = -1;
+                                        }
+                                    }
+                                }
+                                else if (board[y, attack[0]].horz == 0)
+                                {
+                                    damCost[1] += board[y, attack[0]].cost + 2;
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    board[y - 1, attack[0]] = BLANK_UNIT;
+                                    if (attack[1] != 0)
+                                    {
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                        }
+                                        else if (y == 1)
+                                        {
+                                            damCost[0] += attack[1];
+                                            y = -1;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    damCost[1] += board[y, attack[0]].cost + 4;
+                                    int horz = board[y,attack[0]].horz;
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    board[y - 1, attack[0]] = BLANK_UNIT;
+                                    board[y, attack[0] + horz] = BLANK_UNIT;
+                                    board[y - 1, attack[0] + horz] = BLANK_UNIT;
+                                    if (attack[1] != 0)
+                                    {
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                            Down(y - 2, attack[0] + horz);
+                                        }
+                                        else if (y == 1)
+                                        {
+                                            damCost[0] += attack[1];
+                                            y = -1;
+                                        }
+                                    }
+                                }
+
+                                if (attack[1] == 0)
+                                {
+                                    y = -1;
+                                }
+                            }
+                        }
+                        else if (board[y, attack[0]].special == 2) { }
+                    }
+                }
+                else if (attack[2] == 1)
+                { // wide unit; assumes the left side of the two is called
+                    for (int y = height - 1; y > -1; y--)
+                    {
+                        if (board[y, attack[0]].horz != 1)
+                        {
+                            if (!board[y, attack[0]].attacking && !board[y, attack[0] + 1].attacking)
+                            {
+                                damCost[1] += board[y, attack[0]].cost + board[y, attack[0] + 1].cost;
+                                int sum = board[y, attack[0]].health + board[y, attack[0] + 1].health;
+                                if (sum >= attack[1])
+                                {
+                                    if (board[y, attack[0]].special <= 0)
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        if (y > 0)
+                                        {
+                                            Down(y - 1, attack[0]);
+                                        }
+                                    }
+                                    else if (board[y, attack[0]].horz == 0)
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y - 1, attack[0]] = BLANK_UNIT;
+                                        board[y, attack[0] - 1] = BLANK_UNIT;
+                                        board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                            Down(y - 2, attack[0] - 1);
+                                        }
+                                    }
+
+                                    if (board[y, attack[0] + 1].special <= 0)
+                                    {
+                                        board[y, attack[0] + 1] = BLANK_UNIT;
+                                        if (y > 0)
+                                        {
+                                            Down(y - 1, attack[0] + 1);
+                                        }
+                                    }
+                                    else if (board[y, attack[0] + 1].horz == 0)
+                                    {
+                                        board[y, attack[0] + 1] = BLANK_UNIT;
+                                        board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0] + 1);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        board[y, attack[0] + 1] = BLANK_UNIT;
+                                        board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        board[y, attack[0] + 2] = BLANK_UNIT;
+                                        board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0] + 1);
+                                            Down(y - 2, attack[0] + 2);
+                                        }
+                                    }
+                                    y = -1;
+                                }
+                                else
+                                {
+                                    attack[1] -= sum;
+                                    if (y == 0)
+                                    {
+                                        board[y, attack[0]] = BLANK_UNIT;
+                                        board[y, attack[0] + 1] = BLANK_UNIT;
+                                        damCost[0] += attack[1];
+                                    }
+                                    else
+                                    {
+                                        if (board[y, attack[0]].special <= 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y, attack[0] - 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] - 1);
+                                            }
+                                        }
+
+                                        if (board[y, attack[0] + 1].special <= 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y, attack[0] + 2] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 2);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (board[y, attack[0]].attacking && !board[y, attack[0] + 1].attacking)
+                            {
+                                damCost[1] += board[y, attack[0] + 1].cost;
+                                if (board[y, attack[0]].special != 2)
+                                { // if special not do something strange when attacked while attacking
+                                    int sum = board[y, attack[0]].attack + board[y, attack[0] + 1].health;
+                                    if (sum < attack[1])
+                                    {
+                                        attack[1] -= sum;
+                                        damCost[1] += board[y, attack[0]].cost;
+
+                                        if (board[y, attack[0]].special == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y - 2, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            damCost[1] += 4;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y, attack[0] - 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] - 1);
+                                            }
+                                        }
+
+                                        if (board[y, attack[0] + 1].special <= 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y, attack[0] + 2] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 2);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (board[y, attack[0]].attack <= attack[1])
+                                        {
+                                            damCost[1] += board[y, attack[0]].cost;
+
+                                            if (board[y, attack[0]].special == 0)
+                                            {
+                                                damCost[1] += 2;
+                                                board[y, attack[0]] = BLANK_UNIT;
+                                                board[y - 1, attack[0]] = BLANK_UNIT;
+                                                board[y - 2, attack[0]] = BLANK_UNIT;
+                                                if (y > 2)
+                                                {
+                                                    Down(y - 3, attack[0]);
+                                                }
+                                            }
+                                            else if (board[y, attack[0]].horz == 0)
+                                            {
+                                                damCost[1] += 2;
+                                                board[y, attack[0]] = BLANK_UNIT;
+                                                board[y - 1, attack[0]] = BLANK_UNIT;
+                                                if (y > 1)
+                                                {
+                                                    Down(y - 2, attack[0]);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                damCost[1] += 4;
+                                                board[y, attack[0]] = BLANK_UNIT;
+                                                board[y - 1, attack[0]] = BLANK_UNIT;
+                                                board[y, attack[0] - 1] = BLANK_UNIT;
+                                                board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                                if (y > 1)
+                                                {
+                                                    Down(y - 2, attack[0]);
+                                                    Down(y - 2, attack[0] - 1);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (board[y, attack[0]].special == 0)
+                                            {
+                                                board[y, attack[0]].attack -= attack[1];
+                                                board[y - 1, attack[0]].attack -= attack[1];
+                                                board[y - 2, attack[0]].attack -= attack[1];
+                                            }
+                                            else if (board[y, attack[0]].horz == 0)
+                                            {
+                                                board[y, attack[0]].attack -= attack[1];
+                                                board[y - 1, attack[0]].attack -= attack[1];
+                                            }
+                                            else
+                                            {
+                                                board[y, attack[0]].attack -= attack[1];
+                                                board[y - 1, attack[0]].attack -= attack[1];
+                                                board[y, attack[0] - 1].attack -= attack[1];
+                                                board[y - 1, attack[0] - 1].attack -= attack[1];
+                                            }
+                                        }
+
+                                        if (board[y, attack[0] + 1].special <= 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y, attack[0] + 2] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 2);
+                                            }
+                                        }
+                                        y = -1;
+                                    }
+                                }
+                                else { }
+                            }
+                            else if (!board[y, attack[0]].attacking && board[y, attack[0] + 1].attacking)
+                            {
+                                damCost[1] += board[y, attack[0]].cost;
+                                if (board[y, attack[0] + 1].special != 2)
+                                { // if special not do something strange when attacked while attacking
+                                    int sum = board[y, attack[0]].health + board[y, attack[0] + 1].attack;
+                                    if (sum < attack[1])
+                                    {
+                                        attack[1] -= sum;
+                                        damCost[1] += board[y, attack[0] + 1].cost;
+
+                                        if (board[y, attack[0]].special <= 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y, attack[0] - 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] - 1);
+                                            }
+                                        }
+
+                                        if (board[y, attack[0] + 1].special == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 2, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            damCost[1] += 4;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y, attack[0] + 2] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 2);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (board[y, attack[0]].special <= 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y, attack[0] - 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] - 1);
+                                            }
+                                        }
+
+                                        if (board[y, attack[0] + 1].attack <= attack[1])
+                                        {
+                                            damCost[1] += board[y, attack[0] + 1].cost;
+
+                                            if (board[y, attack[0] + 1].special == 0)
+                                            {
+                                                damCost[1] += 2;
+                                                board[y, attack[0] + 1] = BLANK_UNIT;
+                                                board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                                board[y - 2, attack[0] + 1] = BLANK_UNIT;
+                                                if (y > 2)
+                                                {
+                                                    Down(y - 3, attack[0] + 1);
+                                                }
+                                            }
+                                            else if (board[y, attack[0] + 1].horz == 0)
+                                            {
+                                                damCost[1] += 2;
+                                                board[y, attack[0] + 1] = BLANK_UNIT;
+                                                board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                                if (y > 1)
+                                                {
+                                                    Down(y - 2, attack[0] + 1);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                damCost[1] += 4;
+                                                board[y, attack[0] + 1] = BLANK_UNIT;
+                                                board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                                board[y, attack[0] + 2] = BLANK_UNIT;
+                                                board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                                if (y > 1)
+                                                {
+                                                    Down(y - 2, attack[0] + 1);
+                                                    Down(y - 2, attack[0] + 2);
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (board[y, attack[0] + 1].special == 0)
+                                            {
+                                                board[y, attack[0] + 1].attack -= attack[1];
+                                                board[y - 1, attack[0] + 1].attack -= attack[1];
+                                                board[y - 2, attack[0] + 1].attack -= attack[1];
+                                            }
+                                            else if (board[y, attack[0] + 1].horz == 0)
+                                            {
+                                                board[y, attack[0] + 1].attack -= attack[1];
+                                                board[y - 1, attack[0] + 1].attack -= attack[1];
+                                            }
+                                            else
+                                            {
+                                                board[y, attack[0] + 1].attack -= attack[1];
+                                                board[y - 1, attack[0] + 1].attack -= attack[1];
+                                                board[y, attack[0] + 2].attack -= attack[1];
+                                                board[y - 1, attack[0] + 2].attack -= attack[1];
+                                            }
+                                        }
+                                        y = -1;
+                                    }
+                                }
+                                else { }
+                            }
+                            else if (board[y, attack[0]].attacking && board[y, attack[0] + 1].attacking)
+                            {
+                                int sum = board[y, attack[0]].attack + board[y, attack[0] + 1].attack;
+                                if (sum >= attack[1])
+                                {
+                                    if (board[y, attack[0]].attack <= attack[1])
+                                    {
+                                        damCost[1] += board[y, attack[0]].cost;
+
+                                        if (board[y, attack[0]].special == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y - 2, attack[0]] = BLANK_UNIT;
+                                            if (y > 2)
+                                            {
+                                                Down(y - 3, attack[0]);
+                                            }
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 1);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            damCost[1] += 4;
+                                            board[y, attack[0]] = BLANK_UNIT;
+                                            board[y - 1, attack[0]] = BLANK_UNIT;
+                                            board[y, attack[0] - 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] - 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0]);
+                                                Down(y - 2, attack[0] - 1);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (board[y, attack[0]].special == 0)
+                                        {
+                                            board[y, attack[0]].attack -= attack[1];
+                                            board[y - 1, attack[0]].attack -= attack[1];
+                                            board[y - 2, attack[0]].attack -= attack[1];
+                                        }
+                                        else if (board[y, attack[0]].horz == 0)
+                                        {
+                                            board[y, attack[0]].attack -= attack[1];
+                                            board[y - 1, attack[0]].attack -= attack[1];
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0]].attack -= attack[1];
+                                            board[y - 1, attack[0]].attack -= attack[1];
+                                            board[y, attack[0] - 1].attack -= attack[1];
+                                            board[y - 1, attack[0] - 1].attack -= attack[1];
+                                        }
+                                    }
+
+                                    if (board[y, attack[0] + 1].attack <= attack[1])
+                                    {
+                                        damCost[1] += board[y, attack[0] + 1].cost;
+
+                                        if (board[y, attack[0] + 1].special == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 2, attack[0] + 1] = BLANK_UNIT;
+                                            if (y > 2)
+                                            {
+                                                Down(y - 3, attack[0] + 1);
+                                            }
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            damCost[1] += 2;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 1);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            damCost[1] += 4;
+                                            board[y, attack[0] + 1] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 1] = BLANK_UNIT;
+                                            board[y, attack[0] + 2] = BLANK_UNIT;
+                                            board[y - 1, attack[0] + 2] = BLANK_UNIT;
+                                            if (y > 1)
+                                            {
+                                                Down(y - 2, attack[0] + 1);
+                                                Down(y - 2, attack[0] + 2);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (board[y, attack[0] + 1].special == 0)
+                                        {
+                                            board[y, attack[0] + 1].attack -= attack[1];
+                                            board[y - 1, attack[0] + 1].attack -= attack[1];
+                                            board[y - 2, attack[0] + 1].attack -= attack[1];
+                                        }
+                                        else if (board[y, attack[0] + 1].horz == 0)
+                                        {
+                                            board[y, attack[0] + 1].attack -= attack[1];
+                                            board[y - 1, attack[0] + 1].attack -= attack[1];
+                                        }
+                                        else
+                                        {
+                                            board[y, attack[0] + 1].attack -= attack[1];
+                                            board[y - 1, attack[0] + 1].attack -= attack[1];
+                                            board[y, attack[0] + 2].attack -= attack[1];
+                                            board[y - 1, attack[0] + 2].attack -= attack[1];
+                                        }
+                                    }
+                                    y = -1;
+                                }
+                            }
+                            else
+                            {
+                                throw new Exception("not: neither attack, left attack, right attack, or both attack. how?");
+                            }
+                        }
+                        else // attacking a wide unit whose width matches
+                        {
+                            if (!board[y, attack[0]].attacking)
+                            {
+                                damCost[1] += board[y, attack[0]].cost;
+                                attack[1] -= board[y, attack[0]].health;
+
+                                board[y, attack[0]] = BLANK_UNIT;
+                                board[y - 1, attack[0]] = BLANK_UNIT;
+                                board[y, attack[0] + 1] = BLANK_UNIT;
+                                board[y - 1, attack[0] + 1] = BLANK_UNIT;
+
+                                if (attack[1] <= 0)
+                                {
+                                    if (y > 1)
+                                    {
+                                        Down(y - 2, attack[0]);
+                                        Down(y - 2, attack[0] + 1);
+                                    }
+                                    y = -1;
+                                }
+                                else if (y == 1)
+                                {
+                                    damCost[0] += attack[1];
+                                    y = -1;
+                                }
+                            }
+                            else
+                            {
+                                if (board[y, attack[0]].attack > attack[1])
+                                {
+                                    board[y, attack[0]].attack -= attack[1];
+                                    board[y - 1, attack[0]].attack -= attack[1];
+                                    board[y, attack[0] + 1].attack -= attack[1];
+                                    board[y - 1, attack[0] + 1].attack -= attack[1];
+                                    y = -1;
+                                }
+                                else
+                                {
+                                    attack[1] -= board[y, attack[0]].attack;
+                                    damCost[1] += board[y, attack[0]].cost + 4;
+
+                                    board[y, attack[0]] = BLANK_UNIT;
+                                    board[y - 1, attack[0]] = BLANK_UNIT;
+                                    board[y, attack[0] + 1] = BLANK_UNIT;
+                                    board[y - 1, attack[0] + 1] = BLANK_UNIT;
+
+                                    if (attack[1] == 0)
+                                    {
+                                        if (y > 1)
+                                        {
+                                            Down(y - 2, attack[0]);
+                                            Down(y - 2, attack[0] + 1);
+                                        }
+                                        y = -1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (attack[2] == 2) { }
+                else if (attack[2] == 3) { }
+            }
+            return damCost;
+        }
     }
 
     // handles individual units
@@ -1156,6 +2111,17 @@ namespace Main
         public Unit Clone()
         {
             return (Unit)MemberwiseClone();
+        }
+    }
+
+    // data that passes between boards  on turn start/end
+    class DataPacket
+    {
+        // column, damage, special
+        // special: 0 = normal, 1 = wide
+        public List<int[]> attacks = [];
+        public DataPacket()
+        {
         }
     }
 }
